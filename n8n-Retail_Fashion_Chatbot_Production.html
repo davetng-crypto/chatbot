@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retail Fashion Chatbot</title>
+<style>
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:linear-gradient(135deg,#ffe3ec,#e6f2ff);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+.chat{
+width:420px;
+height:700px;
+background:#fff;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,.25);
+display:flex;
+flex-direction:column;
+overflow:hidden;
+}
+.header{
+background:#e91e63;
+color:#fff;
+padding:18px;
+text-align:center;
+font-size:24px;
+font-weight:bold;
+}
+.messages{
+flex:1;
+overflow-y:auto;
+padding:15px;
+background:#fafafa;
+}
+.msg{
+padding:12px 16px;
+border-radius:16px;
+margin:10px 0;
+max-width:80%;
+line-height:1.5;
+word-wrap:break-word;
+}
+.user{
+background:#cfe8ff;
+margin-left:auto;
+}
+.bot{
+background:#ffd9e8;
+}
+.footer{
+display:flex;
+padding:12px;
+border-top:1px solid #ddd;
+}
+.footer input{
+flex:1;
+padding:12px;
+border-radius:22px;
+border:1px solid #bbb;
+font-size:15px;
+outline:none;
+}
+.footer button{
+margin-left:8px;
+padding:12px 18px;
+border:none;
+border-radius:22px;
+background:#e91e63;
+color:#fff;
+font-weight:bold;
+cursor:pointer;
+}
+.footer button:hover{
+background:#c2185b;
+}
+</style>
+</head>
+<body>
+
+<div class="chat">
+<div class="header">👗 Retail Fashion Chatbot</div>
+
+<div class="messages" id="messages">
+<div class="msg bot">
+👋 Hello! Welcome to Retail Fashion.<br><br>
+Ask me about:
+<ul>
+<li>Products</li>
+<li>Returns</li>
+<li>Delivery</li>
+<li>Store Information</li>
+</ul>
+</div>
+</div>
+
+<div class="footer">
+<input id="question" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter')sendMessage()">
+<button onclick="sendMessage()">Send</button>
+</div>
+</div>
+
+<script>
+const webhook="https://davetng.app.n8n.cloud/webhook/b22aac0c-d420-4494-893f-6ae80fbd9ab7";
+
+const messages=document.getElementById("messages");
+
+function add(text,type){
+    const d=document.createElement("div");
+    d.className="msg "+type;
+    d.innerHTML=text;
+    messages.appendChild(d);
+    messages.scrollTop=messages.scrollHeight;
+    return d;
+}
+
+async function sendMessage(){
+
+    const input=document.getElementById("question");
+    const q=input.value.trim();
+
+    if(!q) return;
+
+    add(q,"user");
+    input.value="";
+
+    const thinking=add("🤖 Thinking...","bot");
+
+    try{
+
+        const response=await fetch(webhook,{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                "Accept":"application/json"
+            },
+            body:JSON.stringify({
+                question:q
+            })
+        });
+
+        const text=await response.text();
+
+        if(!text){
+            thinking.innerHTML="⚠️ The server returned an empty response.";
+            return;
+        }
+
+        try{
+            const data=JSON.parse(text);
+            thinking.innerHTML=
+                data.reply ||
+                data.output ||
+                data.response ||
+                data.text ||
+                JSON.stringify(data);
+        }
+        catch{
+            thinking.innerHTML=text;
+        }
+
+    }
+    catch(err){
+        thinking.innerHTML="❌ Unable to connect.<br><br>"+err.message;
+        console.error(err);
+    }
+}
+</script>
+
+</body>
+</html>

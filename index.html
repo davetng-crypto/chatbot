@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retail Fashion Chatbot</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #f7e7ff, #e6f4ff);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .chatbot {
+      width: 100%;
+      max-width: 760px;
+      background: #ffffff;
+      border-radius: 22px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+      overflow: hidden;
+    }
+    .header {
+      background: #6b3fe8;
+      color: white;
+      padding: 22px;
+      text-align: center;
+    }
+    .header h1 { margin: 0; font-size: 28px; }
+    .header p { margin: 8px 0 0; font-size: 15px; opacity: 0.95; }
+    .quick-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 16px;
+      background: #f6f2ff;
+      border-bottom: 1px solid #eee;
+    }
+    .quick-buttons button {
+      border: none;
+      background: #fff;
+      color: #4322aa;
+      padding: 9px 13px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .quick-buttons button:hover { background: #eee7ff; }
+    .chat-window {
+      height: 430px;
+      overflow-y: auto;
+      padding: 18px;
+      background: #fafafa;
+    }
+    .message {
+      max-width: 85%;
+      margin-bottom: 14px;
+      padding: 13px 15px;
+      border-radius: 16px;
+      line-height: 1.45;
+      white-space: pre-line;
+    }
+    .bot {
+      background: #ffffff;
+      border: 1px solid #e5e5e5;
+      color: #222;
+      border-top-left-radius: 4px;
+    }
+    .user {
+      background: #6b3fe8;
+      color: white;
+      margin-left: auto;
+      border-top-right-radius: 4px;
+    }
+    .input-area {
+      display: flex;
+      gap: 10px;
+      padding: 16px;
+      border-top: 1px solid #eee;
+      background: white;
+    }
+    input {
+      flex: 1;
+      padding: 14px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      font-size: 16px;
+    }
+    .send-btn {
+      border: none;
+      background: #6b3fe8;
+      color: white;
+      padding: 0 22px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .send-btn:hover { background: #5630c9; }
+    .footer-note {
+      font-size: 12px;
+      color: #777;
+      text-align: center;
+      padding: 0 16px 14px;
+    }
+    @media (max-width: 520px) {
+      .header h1 { font-size: 22px; }
+      .chat-window { height: 380px; }
+      .input-area { flex-direction: column; }
+      .send-btn { padding: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="chatbot">
+    <div class="header">
+      <h1>🛍️ Retail Fashion Chatbot</h1>
+      <p>Ask about products, returns, delivery, stores, payment and services.</p>
+    </div>
+
+    <div class="quick-buttons">
+      <button onclick="quickAsk('What does Retail Fashion sell?')">Products</button>
+      <button onclick="quickAsk('What is your return policy?')">Returns</button>
+      <button onclick="quickAsk('What are your delivery options?')">Delivery</button>
+      <button onclick="quickAsk('Where are your stores?')">Stores</button>
+      <button onclick="quickAsk('What payment methods do you accept?')">Payment</button>
+      <button onclick="quickAsk('How can I contact customer service?')">Contact</button>
+    </div>
+
+    <div id="chatWindow" class="chat-window">
+      <div class="message bot">Hi! I am your Retail Fashion assistant. How can I help you today?</div>
+    </div>
+
+    <div class="input-area">
+      <input id="userInput" type="text" placeholder="Type your question here..." onkeydown="handleEnter(event)">
+      <button class="send-btn" onclick="askBot()">Send</button>
+    </div>
+    <div class="footer-note">Offline demo chatbot. Knowledge is pasted directly into this HTML file.</div>
+  </div>
+
+  <script>
+    const knowledgeBase = [
+      {
+        keywords: ["sell", "product", "products", "clothing", "fashion", "catalogue", "catalog", "what do you sell"],
+        answer: "Retail Fashion offers clothing, footwear, handbags, fashion accessories, and lifestyle products for men, women, and children."
+      },
+      {
+        keywords: ["men", "men's", "male", "polo", "jeans", "jacket", "sneakers"],
+        answer: "Men's Collection includes Polo Shirts, T-Shirts, Jeans, Jackets, and Sneakers."
+      },
+      {
+        keywords: ["women", "women's", "female", "dress", "dresses", "blouse", "skirt", "handbag", "heels"],
+        answer: "Women's Collection includes Dresses, Blouses, Skirts, Handbags, and Heels."
+      },
+      {
+        keywords: ["kids", "children", "child", "school bag", "shorts"],
+        answer: "Kids Collection includes T-Shirts, Shorts, Dresses, and School Bags."
+      },
+      {
+        keywords: ["accessories", "watch", "watches", "belt", "wallet", "cap", "sunglasses"],
+        answer: "Accessories include Watches, Belts, Wallets, Caps, and Sunglasses."
+      },
+      {
+        keywords: ["lifestyle", "water bottle", "travel bag", "tote", "umbrella"],
+        answer: "Lifestyle products include Water Bottles, Travel Bags, Tote Bags, and Umbrellas."
+      },
+      {
+        keywords: ["operating hour", "hours", "open", "opening", "closing", "time"],
+        answer: "Retail Fashion is open daily from 10:00 AM to 10:00 PM."
+      },
+      {
+        keywords: ["contact", "customer service", "email", "phone", "call", "support"],
+        answer: "You can contact customer service by email at support@retailfashion.com.sg or phone at +65 6123 4567."
+      },
+      {
+        keywords: ["headquarters", "hq", "main office"],
+        answer: "Retail Fashion headquarters is at 123 Orchard Road, #03-10, Singapore 238888."
+      },
+      {
+        keywords: ["online store", "website", "online", "track", "order online"],
+        answer: "Yes. Customers can browse products, place orders, and track deliveries online."
+      },
+      {
+        keywords: ["return", "returns", "refund", "exchange policy"],
+        answer: "Customers may return eligible products within 30 days of purchase. Items must be unused, original tags must remain attached, and the original receipt or proof of purchase is required. Clearance, customised, and gift card purchases are not eligible for returns."
+      },
+      {
+        keywords: ["refunds", "refund process", "money back", "7", "10 business days"],
+        answer: "Approved refunds are processed to the original payment method within 7–10 business days after inspection."
+      },
+      {
+        keywords: ["delivery", "deliver", "shipping", "standard delivery", "express delivery"],
+        answer: "Retail Fashion delivers throughout Singapore. Standard Delivery takes 2–4 business days. Express Delivery arrives the next business day. Store Self-Collection is available within 24 hours."
+      },
+      {
+        keywords: ["delivery charge", "delivery fee", "free delivery", "shipping fee", "below 80", "above 80"],
+        answer: "Orders above SGD 80 enjoy free delivery. Orders below SGD 80 have a delivery charge of SGD 5.90."
+      },
+      {
+        keywords: ["tracking", "dispatch", "dispatched", "confirmation email"],
+        answer: "Customers will receive an email confirmation with tracking details once their order has been dispatched."
+      },
+      {
+        keywords: ["store", "stores", "outlet", "location", "address", "orchard", "tampines", "vivocity"],
+        answer: "Retail Fashion stores:\n\n1. Orchard Flagship Store\n123 Orchard Road, #03-10, Singapore 238888\n\n2. Tampines Mall\n4 Tampines Central 5, #02-18, Singapore 529510\n\n3. VivoCity\n1 HarbourFront Walk, #02-55, Singapore 098585"
+      },
+      {
+        keywords: ["payment", "pay", "visa", "mastercard", "american express", "paynow", "nets", "apple pay", "google pay"],
+        answer: "Accepted payment methods are Visa, Mastercard, American Express, PayNow, NETS, Apple Pay, and Google Pay."
+      },
+      {
+        keywords: ["service", "services", "gift wrapping", "click and collect", "personal shopping", "loyalty", "membership", "product exchange"],
+        answer: "Store services include Click & Collect, Gift Wrapping, Product Exchange, Loyalty Membership, and Personal Shopping Assistance."
+      }
+    ];
+
+    function addMessage(text, sender) {
+      const chatWindow = document.getElementById("chatWindow");
+      const msg = document.createElement("div");
+      msg.className = "message " + sender;
+      msg.textContent = text;
+      chatWindow.appendChild(msg);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function getBotReply(question) {
+      const q = question.toLowerCase();
+      let bestMatch = null;
+      let bestScore = 0;
+
+      knowledgeBase.forEach(item => {
+        let score = 0;
+        item.keywords.forEach(keyword => {
+          if (q.includes(keyword.toLowerCase())) score++;
+        });
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatch = item;
+        }
+      });
+
+      if (bestMatch) return bestMatch.answer;
+
+      return "I'm sorry, I couldn't find that information.";
+    }
+
+    function askBot() {
+      const input = document.getElementById("userInput");
+      const question = input.value.trim();
+      if (!question) return;
+
+      addMessage(question, "user");
+      input.value = "";
+
+      setTimeout(() => {
+        const reply = getBotReply(question);
+        addMessage(reply, "bot");
+      }, 300);
+    }
+
+    function quickAsk(question) {
+      document.getElementById("userInput").value = question;
+      askBot();
+    }
+
+    function handleEnter(event) {
+      if (event.key === "Enter") askBot();
+    }
+  </script>
+</body>
+</html>

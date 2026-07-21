@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retail Fashion Chatbot</title>
+  <style>
+    :root {
+      --purple-900: #4c1d95;
+      --purple-800: #5b21b6;
+      --purple-700: #6d28d9;
+      --purple-600: #7c3aed;
+      --purple-500: #8b5cf6;
+      --purple-300: #c4b5fd;
+      --purple-200: #ddd6fe;
+      --purple-100: #ede9fe;
+      --purple-50: #f5f3ff;
+      --white: #ffffff;
+      --text: #271a3a;
+      --muted: #6b6474;
+      --line: #e8e3ef;
+      --danger: #b42318;
+      --shadow: 0 16px 40px rgba(76, 29, 149, 0.12);
+      --soft-shadow: 0 8px 22px rgba(76, 29, 149, 0.08);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(196, 181, 253, 0.65), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.22), transparent 28%),
+        linear-gradient(135deg, #faf8ff 0%, #f2edff 48%, #ffffff 100%);
+      padding: 24px;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app-shell {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 20px;
+      animation: slideDown 0.6s ease both;
+    }
+
+    .page-header h1 {
+      margin: 0;
+      font-size: clamp(1.75rem, 3vw, 2.65rem);
+      letter-spacing: -0.04em;
+      color: var(--purple-900);
+    }
+
+    .page-header p {
+      margin: 8px auto 0;
+      max-width: 720px;
+      color: var(--muted);
+      font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+      line-height: 1.6;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(280px, 350px) minmax(0, 1fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(221, 214, 254, 0.75);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .settings-panel {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      animation: fadeUp 0.55s ease both;
+    }
+
+    .section-label {
+      margin: 0 0 10px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--purple-700);
+    }
+
+    .mode-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 6px;
+      background: var(--purple-50);
+      border: 1px solid var(--purple-100);
+      border-radius: 16px;
+    }
+
+    .mode-btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 10px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 750;
+      cursor: pointer;
+      transition: 0.2s ease;
+      min-height: 58px;
+    }
+
+    .mode-btn:hover {
+      transform: translateY(-1px);
+      color: var(--purple-800);
+    }
+
+    .mode-btn.active {
+      color: white;
+      background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
+      box-shadow: 0 8px 18px rgba(124, 58, 237, 0.25);
+    }
+
+    .current-mode {
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .current-mode small {
+      display: block;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .current-mode strong {
+      color: var(--purple-800);
+    }
+
+    .info-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: linear-gradient(145deg, #ffffff, #faf8ff);
+      border: 1px solid var(--purple-100);
+      box-shadow: var(--soft-shadow);
+      transition: 0.25s ease;
+    }
+
+    .info-card h3 {
+      margin: 0 0 8px;
+      color: var(--purple-800);
+      font-size: 1rem;
+    }
+
+    .info-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.92rem;
+    }
+
+    .suggestions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .suggestion-btn {
+      border: 1px solid var(--purple-200);
+      background: white;
+      color: var(--purple-800);
+      border-radius: 13px;
+      padding: 11px 10px;
+      font-weight: 750;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(91, 33, 182, 0.05);
+      transition: 0.2s ease;
+    }
+
+    .suggestion-btn:hover {
+      transform: translateY(-2px);
+      background: var(--purple-50);
+      border-color: var(--purple-300);
+    }
+
+    .learning-note {
+      margin-top: auto;
+      padding: 14px;
+      border-radius: 16px;
+      color: #4b3d5f;
+      background: linear-gradient(135deg, #f7f3ff, #ffffff);
+      border: 1px dashed var(--purple-300);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .chat-panel {
+      min-height: 720px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: fadeUp 0.65s ease both;
+    }
+
+    .chat-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .chat-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .bot-avatar {
+      width: 46px;
+      height: 46px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      color: white;
+      font-size: 1.4rem;
+      background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
+      box-shadow: 0 8px 18px rgba(124, 58, 237, 0.25);
+    }
+
+    .chat-title h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      color: var(--purple-900);
+    }
+
+    .chat-title p {
+      margin: 3px 0 0;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .chat-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .action-btn {
+      border: 1px solid var(--purple-200);
+      background: white;
+      color: var(--purple-800);
+      border-radius: 12px;
+      padding: 9px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-1px);
+      background: var(--purple-50);
+    }
+
+    .chat-messages {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)),
+        radial-gradient(circle at 15% 20%, rgba(221, 214, 254, 0.45), transparent 28%);
+      scrollbar-width: thin;
+      scrollbar-color: var(--purple-300) transparent;
+    }
+
+    .message-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      animation: messageIn 0.3s ease both;
+    }
+
+    .message-row.user {
+      justify-content: flex-end;
+    }
+
+    .mini-avatar {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--purple-100);
+      color: var(--purple-800);
+      font-size: 0.95rem;
+      flex: 0 0 auto;
+    }
+
+    .message-card {
+      max-width: min(78%, 680px);
+    }
+
+    .message-bubble {
+      padding: 13px 15px;
+      border-radius: 18px;
+      line-height: 1.52;
+      font-size: 0.95rem;
+      overflow-wrap: anywhere;
+      box-shadow: 0 6px 16px rgba(49, 31, 74, 0.06);
+    }
+
+    .message-row.bot .message-bubble {
+      background: white;
+      border: 1px solid var(--line);
+      border-bottom-left-radius: 6px;
+    }
+
+    .message-row.user .message-bubble {
+      color: white;
+      background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
+      border-bottom-right-radius: 6px;
+    }
+
+    .message-time {
+      margin-top: 5px;
+      padding: 0 4px;
+      color: #938b9d;
+      font-size: 0.72rem;
+    }
+
+    .message-row.user .message-time {
+      text-align: right;
+    }
+
+    .ai-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 7px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: var(--purple-100);
+      color: var(--purple-800);
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .message-bubble ul {
+      margin: 8px 0 0;
+      padding-left: 20px;
+    }
+
+    .message-bubble li + li {
+      margin-top: 4px;
+    }
+
+    .typing-row {
+      display: none;
+    }
+
+    .typing-row.show {
+      display: flex;
+    }
+
+    .typing-bubble {
+      display: inline-flex;
+      gap: 5px;
+      padding: 13px 16px;
+      border-radius: 18px 18px 18px 6px;
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .typing-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--purple-500);
+      animation: typing 1.15s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    .input-wrap {
+      padding: 16px 18px 18px;
+      border-top: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.96);
+    }
+
+    .input-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 8px;
+      border: 1px solid var(--purple-200);
+      border-radius: 18px;
+      background: white;
+      box-shadow: 0 8px 20px rgba(76, 29, 149, 0.07);
+      transition: 0.2s ease;
+    }
+
+    .input-bar:focus-within {
+      border-color: var(--purple-500);
+      box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.11);
+    }
+
+    #messageInput {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      padding: 9px 10px;
+      color: var(--text);
+      background: transparent;
+    }
+
+    #messageInput::placeholder {
+      color: #a59cad;
+    }
+
+    .send-btn {
+      width: 46px;
+      height: 46px;
+      border: 0;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: white;
+      cursor: pointer;
+      font-size: 1.05rem;
+      background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
+      box-shadow: 0 8px 18px rgba(124, 58, 237, 0.25);
+      transition: 0.2s ease;
+    }
+
+    .send-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .input-hint {
+      margin: 8px 4px 0;
+      text-align: center;
+      color: #938b9d;
+      font-size: 0.75rem;
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+      30% { transform: translateY(-5px); opacity: 1; }
+    }
+
+    @keyframes messageIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.99); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding: 16px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .settings-panel {
+        order: 1;
+      }
+
+      .chat-panel {
+        order: 2;
+        min-height: 690px;
+      }
+
+      .learning-note {
+        margin-top: 0;
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      .page-header {
+        margin: 8px 4px 14px;
+      }
+
+      .settings-panel {
+        padding: 15px;
+        border-radius: 20px;
+      }
+
+      .mode-switch {
+        grid-template-columns: 1fr;
+      }
+
+      .suggestions {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .suggestion-btn {
+        padding: 10px 5px;
+        font-size: 0.8rem;
+      }
+
+      .chat-panel {
+        min-height: 72vh;
+        max-height: 82vh;
+        border-radius: 20px;
+      }
+
+      .chat-topbar {
+        padding: 13px;
+        align-items: flex-start;
+      }
+
+      .bot-avatar {
+        width: 40px;
+        height: 40px;
+      }
+
+      .chat-title p {
+        display: none;
+      }
+
+      .action-btn {
+        padding: 8px 9px;
+        font-size: 0.75rem;
+      }
+
+      .chat-messages {
+        padding: 14px 12px;
+      }
+
+      .message-card {
+        max-width: 86%;
+      }
+
+      .message-bubble {
+        font-size: 0.9rem;
+      }
+
+      .input-wrap {
+        padding: 10px;
+      }
+
+      .input-bar {
+        gap: 5px;
+      }
+
+      .send-btn {
+        width: 42px;
+        height: 42px;
+      }
+
+      #messageInput {
+        padding: 8px 7px;
+        font-size: 0.9rem;
+      }
+    }
+
+    @media (max-width: 390px) {
+      .suggestions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .chat-actions {
+        flex-direction: column;
+      }
+
+      .action-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="page-header">
+      <h1>🛍 Retail Fashion Chatbot</h1>
+      <p>Discover the difference between a Rule-Based chatbot and an AI-Powered chatbot.</p>
+    </header>
+
+    <section class="layout">
+      <aside class="panel settings-panel">
+        <div>
+          <p class="section-label">Chatbot Mode</p>
+          <div class="mode-switch" role="group" aria-label="Select chatbot mode">
+            <button class="mode-btn active" data-mode="rule" type="button">🟣 Rule-Based</button>
+            <button class="mode-btn" data-mode="ai" type="button">✨ AI-Powered<br>(Simulation)</button>
+          </div>
+
+          <div class="current-mode" aria-live="polite">
+            <small>Current Mode</small>
+            <strong id="currentModeText">🟣 Rule-Based Chatbot</strong>
+          </div>
+        </div>
+
+        <div class="info-card" id="modeInfoCard">
+          <h3 id="modeInfoTitle">Rule-Based Chatbot</h3>
+          <p id="modeInfoText">
+            Uses predefined rules and keyword matching to locate the most suitable answer from its built-in knowledge.
+          </p>
+        </div>
+
+        <div>
+          <p class="section-label">Suggested Questions</p>
+          <div class="suggestions">
+            <button class="suggestion-btn" data-question="What products do you sell?" type="button">Products</button>
+            <button class="suggestion-btn" data-question="What is your return policy?" type="button">Returns</button>
+            <button class="suggestion-btn" data-question="What delivery options are available?" type="button">Delivery</button>
+            <button class="suggestion-btn" data-question="Where are your stores?" type="button">Stores</button>
+            <button class="suggestion-btn" data-question="What payment methods do you accept?" type="button">Payment</button>
+            <button class="suggestion-btn" data-question="How can I contact customer service?" type="button">Contact</button>
+          </div>
+        </div>
+
+        <div class="learning-note">
+          <strong>Learning Point:</strong><br>
+          The interface and company knowledge remain the same. Only the chatbot's response engine changes.
+        </div>
+      </aside>
+
+      <section class="panel chat-panel" aria-label="Retail Fashion Chatbot conversation">
+        <div class="chat-topbar">
+          <div class="chat-title">
+            <div class="bot-avatar">🛍</div>
+            <div>
+              <h2>Retail Fashion Assistant</h2>
+              <p>Online and ready to help</p>
+            </div>
+          </div>
+
+          <div class="chat-actions">
+            <button class="action-btn" id="clearChatBtn" type="button">Clear Chat</button>
+            <button class="action-btn" id="newChatBtn" type="button">New Chat</button>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages" aria-live="polite">
+          <div class="message-row bot">
+            <div class="mini-avatar">🛍</div>
+            <div class="message-card">
+              <div class="message-bubble">
+                <strong>Hello!</strong><br><br>
+                I am your Retail Fashion Assistant.<br><br>
+                How can I help you today?
+              </div>
+              <div class="message-time"></div>
+            </div>
+          </div>
+
+          <div class="message-row bot typing-row" id="typingIndicator" aria-hidden="true">
+            <div class="mini-avatar">🛍</div>
+            <div class="typing-bubble" aria-label="Chatbot is typing">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-wrap">
+          <div class="input-bar">
+            <input
+              id="messageInput"
+              type="text"
+              autocomplete="off"
+              placeholder="Ask me anything about Retail Fashion..."
+              aria-label="Chat message"
+            />
+            <button class="send-btn" id="sendBtn" type="button" aria-label="Send message">➤</button>
+          </div>
+          <div class="input-hint">Press Enter to send</div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    /*
+      Retail Fashion Chatbot
+      -----------------------
+      The interface calls getChatbotResponse().
+      To add a real AI service later, replace only that function
+      while keeping the interface and knowledge base unchanged.
+    */
+
+    const knowledge = {
+      products: {
+        keywords: [
+          "product", "products", "sell", "selling", "collection", "collections",
+          "clothes", "clothing", "mens", "men's", "men", "womens", "women's", "women",
+          "kids", "children", "accessories", "lifestyle", "polo", "shirt", "shirts",
+          "t-shirt", "tshirts", "jeans", "jacket", "jackets", "sneakers", "dress",
+          "dresses", "blouse", "blouses", "skirt", "skirts", "handbag", "handbags",
+          "heels", "shorts", "school bag", "school bags", "watch", "watches", "belt",
+          "belts", "wallet", "wallets", "cap", "caps", "sunglasses", "water bottle",
+          "water bottles", "travel bag", "travel bags", "tote bag", "tote bags",
+          "umbrella", "umbrellas"
+        ],
+        rule: "Retail Fashion sells Men's Clothing, Women's Clothing, Kids' Clothing, Accessories and Lifestyle Products.",
+        ai: `
+          Retail Fashion offers a wide range of fashion and lifestyle items:
+          <ul>
+            <li><strong>Men's Collection:</strong> Polo Shirts, T-Shirts, Jeans, Jackets and Sneakers</li>
+            <li><strong>Women's Collection:</strong> Dresses, Blouses, Skirts, Handbags and Heels</li>
+            <li><strong>Kids' Collection:</strong> T-Shirts, Shorts, Dresses and School Bags</li>
+            <li><strong>Accessories:</strong> Watches, Belts, Wallets, Caps and Sunglasses</li>
+            <li><strong>Lifestyle Products:</strong> Water Bottles, Travel Bags, Tote Bags and Umbrellas</li>
+          </ul>
+        `
+      },
+
+      returns: {
+        keywords: [
+          "return", "returns", "refund", "refunds", "exchange", "exchanges",
+          "receipt", "tags", "unused", "clearance", "customised", "customized",
+          "gift card", "gift cards", "send back"
+        ],
+        rule: "Returns are accepted within 30 days with the original receipt, original tags attached and the product unused. Clearance items, customised products and gift cards cannot be returned. Refunds take 7–10 business days.",
+        ai: `
+          Returns are accepted within <strong>30 days</strong>.
+          <ul>
+            <li>You must have the original receipt.</li>
+            <li>The original tags must still be attached.</li>
+            <li>The product must be unused.</li>
+          </ul>
+          Clearance items, customised products and gift cards cannot be returned.<br><br>
+          Refunds are processed within <strong>7–10 business days</strong>.
+        `
+      },
+
+      delivery: {
+        keywords: [
+          "delivery", "deliver", "shipping", "ship", "courier", "standard delivery",
+          "express delivery", "next day", "self collection", "self-collection",
+          "collect", "collection", "tracking", "dispatch", "delivery charge",
+          "delivery fee", "free delivery", "sgd80", "$80", "5.90"
+        ],
+        rule: "Standard Delivery takes 2–4 business days. Express Delivery arrives the next business day. Store Self Collection is available within 24 hours. Orders above SGD80 receive free delivery; orders below SGD80 cost SGD5.90. Tracking is sent after dispatch.",
+        ai: `
+          Here are the available delivery options:
+          <ul>
+            <li><strong>Standard Delivery:</strong> 2–4 business days</li>
+            <li><strong>Express Delivery:</strong> Next business day</li>
+            <li><strong>Store Self Collection:</strong> Available within 24 hours</li>
+          </ul>
+          Orders above <strong>SGD80</strong> receive free delivery. Orders below SGD80 have a delivery charge of <strong>SGD5.90</strong>.<br><br>
+          Tracking information is sent after your order is dispatched.
+        `
+      },
+
+      stores: {
+        keywords: [
+          "store", "stores", "location", "locations", "outlet", "outlets",
+          "branch", "branches", "orchard", "tampines", "vivocity", "vivo city",
+          "flagship", "where are you"
+        ],
+        rule: "Retail Fashion stores are located at Orchard Flagship Store, Tampines Mall and VivoCity.",
+        ai: `
+          You can visit Retail Fashion at:
+          <ul>
+            <li>Orchard Flagship Store</li>
+            <li>Tampines Mall</li>
+            <li>VivoCity</li>
+          </ul>
+        `
+      },
+
+      hours: {
+        keywords: [
+          "operating hours", "opening hours", "business hours", "open", "close",
+          "closing", "what time", "daily", "10:00", "10am", "10 pm", "10pm"
+        ],
+        rule: "All Retail Fashion stores operate daily from 10:00 AM to 10:00 PM.",
+        ai: "All Retail Fashion stores are open <strong>daily from 10:00 AM to 10:00 PM</strong>."
+      },
+
+      payment: {
+        keywords: [
+          "payment", "pay", "payments", "visa", "mastercard", "master card",
+          "american express", "amex", "nets", "paynow", "apple pay", "google pay",
+          "credit card", "debit card"
+        ],
+        rule: "Retail Fashion accepts Visa, Mastercard, American Express, NETS, PayNow, Apple Pay and Google Pay.",
+        ai: `
+          Retail Fashion accepts:
+          <ul>
+            <li>Visa</li>
+            <li>Mastercard</li>
+            <li>American Express</li>
+            <li>NETS</li>
+            <li>PayNow</li>
+            <li>Apple Pay</li>
+            <li>Google Pay</li>
+          </ul>
+        `
+      },
+
+      contact: {
+        keywords: [
+          "contact", "customer service", "support", "help desk", "email", "phone",
+          "telephone", "call", "support@retailfashion.com.sg", "6123 4567"
+        ],
+        rule: "Contact Customer Service by email at support@retailfashion.com.sg or by phone at +65 6123 4567.",
+        ai: `
+          You can contact Retail Fashion Customer Service through:
+          <ul>
+            <li><strong>Email:</strong> support@retailfashion.com.sg</li>
+            <li><strong>Phone:</strong> +65 6123 4567</li>
+          </ul>
+        `
+      },
+
+      services: {
+        keywords: [
+          "service", "services", "click and collect", "click & collect",
+          "gift wrapping", "gift wrap", "loyalty", "membership",
+          "personal shopping", "shopping assistance", "product exchange"
+        ],
+        rule: "Store services include Click & Collect, Gift Wrapping, Product Exchange, Loyalty Membership and Personal Shopping Assistance.",
+        ai: `
+          Retail Fashion provides these store services:
+          <ul>
+            <li>Click & Collect</li>
+            <li>Gift Wrapping</li>
+            <li>Product Exchange</li>
+            <li>Loyalty Membership</li>
+            <li>Personal Shopping Assistance</li>
+          </ul>
+        `
+      }
+    };
+
+    const fallbackText = "I'm sorry, I couldn't find that information.";
+
+    let currentMode = "rule";
+    let audioContext = null;
+    let isReplying = false;
+
+    const chatMessages = document.getElementById("chatMessages");
+    const typingIndicator = document.getElementById("typingIndicator");
+    const messageInput = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const currentModeText = document.getElementById("currentModeText");
+    const modeInfoTitle = document.getElementById("modeInfoTitle");
+    const modeInfoText = document.getElementById("modeInfoText");
+
+    function initAudio() {
+      if (!audioContext) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) audioContext = new AudioContextClass();
+      }
+      if (audioContext && audioContext.state === "suspended") {
+        audioContext.resume();
+      }
+    }
+
+    function playTone(frequency, duration, type = "sine", volume = 0.06, delay = 0) {
+      initAudio();
+      if (!audioContext) return;
+
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      const start = audioContext.currentTime + delay;
+
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, start);
+
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(volume, start + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      oscillator.start(start);
+      oscillator.stop(start + duration + 0.02);
+    }
+
+    function playSendSound() {
+      playTone(440, 0.08, "sine", 0.04);
+      playTone(620, 0.09, "sine", 0.035, 0.05);
+    }
+
+    function playSuggestionSound() {
+      playTone(520, 0.07, "triangle", 0.04);
+    }
+
+    function playReplySound() {
+      playTone(660, 0.10, "sine", 0.045);
+      playTone(880, 0.14, "sine", 0.04, 0.08);
+    }
+
+    function playNoAnswerSound() {
+      playTone(300, 0.14, "triangle", 0.05);
+      playTone(220, 0.18, "triangle", 0.045, 0.10);
+    }
+
+    function getTimestamp() {
+      return new Intl.DateTimeFormat([], {
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(new Date());
+    }
+
+    function setInitialTimestamp() {
+      const initialTime = chatMessages.querySelector(".message-time");
+      if (initialTime) initialTime.textContent = getTimestamp();
+    }
+
+    function scrollToBottom() {
+      requestAnimationFrame(() => {
+        chatMessages.scrollTo({
+          top: chatMessages.scrollHeight,
+          behavior: "smooth"
+        });
+      });
+    }
+
+    function addMessage(content, sender, isAI = false) {
+      const row = document.createElement("div");
+      row.className = `message-row ${sender}`;
+
+      if (sender === "bot") {
+        const avatar = document.createElement("div");
+        avatar.className = "mini-avatar";
+        avatar.textContent = "🛍";
+        row.appendChild(avatar);
+      }
+
+      const card = document.createElement("div");
+      card.className = "message-card";
+
+      const bubble = document.createElement("div");
+      bubble.className = "message-bubble";
+
+      if (sender === "bot" && isAI) {
+        const banner = document.createElement("div");
+        banner.className = "ai-banner";
+        banner.textContent = "✨ AI-Powered Response (Simulation)";
+        bubble.appendChild(banner);
+
+        const response = document.createElement("div");
+        response.innerHTML = content;
+        bubble.appendChild(response);
+      } else if (sender === "bot") {
+        bubble.textContent = content;
+      } else {
+        bubble.textContent = content;
+      }
+
+      const time = document.createElement("div");
+      time.className = "message-time";
+      time.textContent = getTimestamp();
+
+      card.appendChild(bubble);
+      card.appendChild(time);
+      row.appendChild(card);
+
+      chatMessages.insertBefore(row, typingIndicator);
+      scrollToBottom();
+    }
+
+    function normalizeText(text) {
+      return text
+        .toLowerCase()
+        .replace(/[’']/g, "'")
+        .replace(/[^a-z0-9$+@.'&\-\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function findKnowledgeTopic(question) {
+      const normalized = normalizeText(question);
+      let bestTopic = null;
+      let bestScore = 0;
+
+      for (const [topicName, topic] of Object.entries(knowledge)) {
+        let score = 0;
+
+        for (const keyword of topic.keywords) {
+          const normalizedKeyword = normalizeText(keyword);
+          if (normalized.includes(normalizedKeyword)) {
+            score += normalizedKeyword.includes(" ") ? 3 : 1;
+          }
+        }
+
+        if (topicName === "returns" && /\b(can i|may i|how do i)\b.*\b(return|exchange|refund)\b/.test(normalized)) score += 4;
+        if (topicName === "delivery" && /\bhow long\b.*\b(delivery|shipping)\b/.test(normalized)) score += 4;
+        if (topicName === "stores" && /\bwhere\b.*\b(store|outlet|location)\b/.test(normalized)) score += 4;
+        if (topicName === "hours" && /\b(when|what time)\b.*\b(open|close)\b/.test(normalized)) score += 4;
+        if (topicName === "payment" && /\bhow\b.*\bpay\b/.test(normalized)) score += 3;
+        if (topicName === "contact" && /\bhow\b.*\b(contact|reach|call|email)\b/.test(normalized)) score += 4;
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestTopic = topicName;
+        }
+      }
+
+      return bestScore > 0 ? bestTopic : null;
+    }
+
+    /*
+      Future enhancement point:
+      Replace this function with a Gemini, OpenAI or Claude API call later.
+      The rest of the application does not need to change.
+    */
+    function getChatbotResponse(question, mode) {
+      const topicName = findKnowledgeTopic(question);
+
+      if (!topicName) {
+        return {
+          text: fallbackText,
+          found: false,
+          isAI: mode === "ai"
+        };
+      }
+
+      const topic = knowledge[topicName];
+
+      return {
+        text: mode === "ai" ? topic.ai.trim() : topic.rule,
+        found: true,
+        isAI: mode === "ai"
+      };
+    }
+
+    async function sendMessage(customQuestion = null, soundType = "send") {
+      if (isReplying) return;
+
+      const question = (customQuestion ?? messageInput.value).trim();
+      if (!question) return;
+
+      initAudio();
+
+      if (soundType === "suggestion") {
+        playSuggestionSound();
+      } else {
+        playSendSound();
+      }
+
+      addMessage(question, "user");
+      messageInput.value = "";
+      messageInput.focus();
+
+      isReplying = true;
+      sendBtn.disabled = true;
+      typingIndicator.classList.add("show");
+      typingIndicator.setAttribute("aria-hidden", "false");
+      scrollToBottom();
+
+      const delay = currentMode === "ai" ? 900 : 650;
+
+      await new Promise(resolve => setTimeout(resolve, delay));
+
+      typingIndicator.classList.remove("show");
+      typingIndicator.setAttribute("aria-hidden", "true");
+
+      const response = getChatbotResponse(question, currentMode);
+      addMessage(response.text, "bot", response.isAI);
+
+      if (response.found) {
+        playReplySound();
+      } else {
+        playNoAnswerSound();
+      }
+
+      isReplying = false;
+      sendBtn.disabled = false;
+    }
+
+    function updateMode(mode) {
+      currentMode = mode;
+
+      document.querySelectorAll(".mode-btn").forEach(button => {
+        button.classList.toggle("active", button.dataset.mode === mode);
+      });
+
+      if (mode === "rule") {
+        currentModeText.textContent = "🟣 Rule-Based Chatbot";
+        modeInfoTitle.textContent = "Rule-Based Chatbot";
+        modeInfoText.textContent =
+          "Uses predefined rules and keyword matching to locate the most suitable answer from its built-in knowledge.";
+      } else {
+        currentModeText.textContent = "✨ AI-Powered Chatbot (Simulation)";
+        modeInfoTitle.textContent = "AI-Powered Chatbot (Simulation)";
+        modeInfoText.textContent =
+          'In a real application this mode would connect to an AI model such as Gemini or ChatGPT. For this demonstration it uses the same Retail Fashion knowledge but presents the answers in a more natural conversational style. The purpose is to demonstrate how an AI "brain" can replace a rule-based engine without changing the user interface.';
+      }
+
+      playSuggestionSound();
+    }
+
+    function resetChat() {
+      const messageRows = [...chatMessages.querySelectorAll(".message-row:not(#typingIndicator)")];
+      messageRows.forEach(row => row.remove());
+
+      const welcome = document.createElement("div");
+      welcome.className = "message-row bot";
+      welcome.innerHTML = `
+        <div class="mini-avatar">🛍</div>
+        <div class="message-card">
+          <div class="message-bubble">
+            <strong>Hello!</strong><br><br>
+            I am your Retail Fashion Assistant.<br><br>
+            How can I help you today?
+          </div>
+          <div class="message-time">${getTimestamp()}</div>
+        </div>
+      `;
+
+      chatMessages.insertBefore(welcome, typingIndicator);
+      messageInput.value = "";
+      messageInput.focus();
+      scrollToBottom();
+      playSuggestionSound();
+    }
+
+    document.querySelectorAll(".mode-btn").forEach(button => {
+      button.addEventListener("click", () => updateMode(button.dataset.mode));
+    });
+
+    document.querySelectorAll(".suggestion-btn").forEach(button => {
+      button.addEventListener("click", () => {
+        sendMessage(button.dataset.question, "suggestion");
+      });
+    });
+
+    sendBtn.addEventListener("click", () => sendMessage());
+
+    messageInput.addEventListener("keydown", event => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+
+    document.getElementById("clearChatBtn").addEventListener("click", resetChat);
+    document.getElementById("newChatBtn").addEventListener("click", resetChat);
+
+    setInitialTimestamp();
+    messageInput.focus();
+  </script>
+</body>
+</html>

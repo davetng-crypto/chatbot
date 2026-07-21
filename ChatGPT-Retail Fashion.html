@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6d28d9" />
+  <title>Retail Fashion Chatbot</title>
+  <style>
+    :root {
+      --purple-950: #2e1065;
+      --purple-900: #4c1d95;
+      --purple-800: #5b21b6;
+      --purple-700: #6d28d9;
+      --purple-600: #7c3aed;
+      --purple-500: #8b5cf6;
+      --purple-300: #c4b5fd;
+      --purple-200: #ddd6fe;
+      --purple-100: #ede9fe;
+      --purple-50: #f5f3ff;
+      --white: #ffffff;
+      --text: #251a34;
+      --muted: #6f6879;
+      --line: #e9e4f0;
+      --success: #16a34a;
+      --danger: #b42318;
+      --shadow-lg: 0 22px 55px rgba(76, 29, 149, 0.15);
+      --shadow-md: 0 10px 28px rgba(76, 29, 149, 0.1);
+      --shadow-sm: 0 6px 18px rgba(76, 29, 149, 0.07);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 15px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 10%, rgba(196, 181, 253, 0.7), transparent 30%),
+        radial-gradient(circle at 90% 85%, rgba(139, 92, 246, 0.24), transparent 30%),
+        linear-gradient(135deg, #fbfaff 0%, #f3efff 52%, #ffffff 100%);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 20px;
+      animation: fadeDown 0.55s ease both;
+    }
+
+    .brand-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding: 7px 12px;
+      border: 1px solid rgba(139, 92, 246, 0.18);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.75);
+      color: var(--purple-800);
+      box-shadow: var(--shadow-sm);
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      backdrop-filter: blur(10px);
+    }
+
+    .page-header h1 {
+      margin: 0;
+      color: var(--purple-950);
+      font-size: clamp(1.9rem, 4vw, 3rem);
+      letter-spacing: -0.05em;
+    }
+
+    .page-header p {
+      max-width: 760px;
+      margin: 9px auto 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: clamp(0.94rem, 1.5vw, 1.05rem);
+    }
+
+    .chat-card {
+      min-height: 760px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid rgba(221, 214, 254, 0.82);
+      border-radius: var(--radius-xl);
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(16px);
+      animation: fadeUp 0.65s ease both;
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.98), rgba(245,243,255,0.94));
+    }
+
+    .assistant-identity {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .assistant-avatar {
+      width: 50px;
+      height: 50px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 17px;
+      color: white;
+      font-size: 1.45rem;
+      background: linear-gradient(135deg, var(--purple-800), var(--purple-500));
+      box-shadow: 0 10px 22px rgba(124, 58, 237, 0.28);
+    }
+
+    .assistant-copy h2 {
+      margin: 0;
+      color: var(--purple-950);
+      font-size: 1.08rem;
+      letter-spacing: -0.02em;
+    }
+
+    .status-line {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1);
+    }
+
+    .chat-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .utility-button {
+      border: 1px solid var(--purple-200);
+      border-radius: 12px;
+      padding: 9px 13px;
+      background: white;
+      color: var(--purple-800);
+      font-weight: 750;
+      cursor: pointer;
+      transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+    }
+
+    .utility-button:hover {
+      transform: translateY(-2px);
+      background: var(--purple-50);
+      border-color: var(--purple-300);
+    }
+
+    .suggestion-strip {
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.94);
+    }
+
+    .suggestion-title {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .suggestion-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .suggestion-button {
+      border: 1px solid var(--purple-200);
+      border-radius: 999px;
+      padding: 10px 14px;
+      background: linear-gradient(180deg, #ffffff, #fbf9ff);
+      color: var(--purple-800);
+      box-shadow: 0 5px 14px rgba(91, 33, 182, 0.05);
+      font-size: 0.88rem;
+      font-weight: 750;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .suggestion-button:hover {
+      transform: translateY(-2px);
+      border-color: var(--purple-400, #a78bfa);
+      box-shadow: 0 8px 18px rgba(91, 33, 182, 0.1);
+    }
+
+    .chat-messages {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 17px;
+      padding: 24px;
+      background:
+        linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)),
+        radial-gradient(circle at 10% 15%, rgba(221,214,254,0.5), transparent 24%);
+      scrollbar-width: thin;
+      scrollbar-color: var(--purple-300) transparent;
+    }
+
+    .message-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      animation: messageIn 0.3s ease both;
+    }
+
+    .message-row.user {
+      justify-content: flex-end;
+    }
+
+    .mini-avatar {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: var(--purple-100);
+      color: var(--purple-800);
+      font-size: 0.96rem;
+    }
+
+    .message-card {
+      max-width: min(78%, 700px);
+    }
+
+    .message-bubble {
+      padding: 14px 16px;
+      border-radius: 19px;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      overflow-wrap: anywhere;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .message-row.assistant .message-bubble {
+      border: 1px solid var(--line);
+      border-bottom-left-radius: 7px;
+      background: white;
+      color: var(--text);
+    }
+
+    .message-row.user .message-bubble {
+      border-bottom-right-radius: 7px;
+      color: white;
+      background: linear-gradient(135deg, var(--purple-800), var(--purple-500));
+      box-shadow: 0 9px 22px rgba(124, 58, 237, 0.2);
+    }
+
+    .message-bubble ul {
+      margin: 8px 0 0;
+      padding-left: 21px;
+    }
+
+    .message-bubble li + li {
+      margin-top: 4px;
+    }
+
+    .message-time {
+      margin-top: 5px;
+      padding: 0 4px;
+      color: #978fa1;
+      font-size: 0.71rem;
+    }
+
+    .message-row.user .message-time {
+      text-align: right;
+    }
+
+    .typing-row {
+      display: none;
+    }
+
+    .typing-row.show {
+      display: flex;
+    }
+
+    .typing-bubble {
+      display: inline-flex;
+      gap: 5px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 19px 19px 19px 7px;
+      background: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .typing-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--purple-500);
+      animation: typing 1.1s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    .composer {
+      position: sticky;
+      bottom: 0;
+      padding: 16px 18px 18px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(12px);
+    }
+
+    .input-shell {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px;
+      border: 1px solid var(--purple-200);
+      border-radius: 19px;
+      background: white;
+      box-shadow: 0 8px 24px rgba(76, 29, 149, 0.08);
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .input-shell:focus-within {
+      border-color: var(--purple-500);
+      box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.11);
+    }
+
+    #messageInput {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      padding: 10px 11px;
+      color: var(--text);
+      background: transparent;
+    }
+
+    #messageInput::placeholder {
+      color: #aaa1b3;
+    }
+
+    .send-button {
+      width: 47px;
+      height: 47px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 15px;
+      color: white;
+      background: linear-gradient(135deg, var(--purple-800), var(--purple-500));
+      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.24);
+      cursor: pointer;
+      transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+
+    .send-button:hover {
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .send-button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .composer-note {
+      margin: 8px 4px 0;
+      text-align: center;
+      color: #978fa1;
+      font-size: 0.74rem;
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+      30% { transform: translateY(-5px); opacity: 1; }
+    }
+
+    @keyframes messageIn {
+      from { opacity: 0; transform: translateY(9px) scale(0.99); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 12px;
+      }
+
+      .page-header {
+        margin: 6px 8px 15px;
+      }
+
+      .chat-card {
+        min-height: 82vh;
+        max-height: 88vh;
+        border-radius: 22px;
+      }
+
+      .chat-header {
+        align-items: flex-start;
+        padding: 14px;
+      }
+
+      .assistant-avatar {
+        width: 43px;
+        height: 43px;
+      }
+
+      .assistant-copy h2 {
+        font-size: 0.98rem;
+      }
+
+      .status-line {
+        font-size: 0.74rem;
+      }
+
+      .utility-button {
+        padding: 8px 10px;
+        font-size: 0.75rem;
+      }
+
+      .suggestion-strip {
+        padding: 12px 13px;
+      }
+
+      .suggestion-buttons {
+        gap: 7px;
+      }
+
+      .suggestion-button {
+        padding: 9px 12px;
+        font-size: 0.8rem;
+      }
+
+      .chat-messages {
+        padding: 15px 12px;
+      }
+
+      .message-card {
+        max-width: 86%;
+      }
+
+      .message-bubble {
+        padding: 12px 14px;
+        font-size: 0.9rem;
+      }
+
+      .composer {
+        padding: 10px;
+      }
+
+      #messageInput {
+        padding: 9px 7px;
+        font-size: 0.9rem;
+      }
+
+      .send-button {
+        width: 43px;
+        height: 43px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .page-header p {
+        font-size: 0.88rem;
+      }
+
+      .chat-header {
+        gap: 8px;
+      }
+
+      .assistant-copy .status-line {
+        display: none;
+      }
+
+      .chat-actions {
+        flex-direction: column;
+      }
+
+      .utility-button {
+        width: 100%;
+      }
+
+      .suggestion-buttons {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .suggestion-button {
+        width: 100%;
+        padding-inline: 6px;
+      }
+
+      .mini-avatar {
+        width: 30px;
+        height: 30px;
+      }
+    }
+
+    @media (max-width: 350px) {
+      .suggestion-buttons {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .message-card {
+        max-width: 89%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="page-header">
+      <div class="brand-chip">Customer Support</div>
+      <h1>🛍️ Retail Fashion Chatbot</h1>
+      <p>Ask about our products, returns, delivery, stores, payment methods and customer services.</p>
+    </header>
+
+    <section class="chat-card" aria-label="Retail Fashion chatbot">
+      <div class="chat-header">
+        <div class="assistant-identity">
+          <div class="assistant-avatar">🛍️</div>
+          <div class="assistant-copy">
+            <h2>Retail Fashion Assistant</h2>
+            <div class="status-line">
+              <span class="status-dot"></span>
+              Online and ready to help
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-actions">
+          <button class="utility-button" id="clearChatButton" type="button">Clear Chat</button>
+          <button class="utility-button" id="newChatButton" type="button">New Chat</button>
+        </div>
+      </div>
+
+      <div class="suggestion-strip">
+        <p class="suggestion-title">Suggested Questions</p>
+        <div class="suggestion-buttons">
+          <button class="suggestion-button" data-question="What does Retail Fashion sell?" type="button">Products</button>
+          <button class="suggestion-button" data-question="What is your return policy?" type="button">Returns</button>
+          <button class="suggestion-button" data-question="What are your delivery options?" type="button">Delivery</button>
+          <button class="suggestion-button" data-question="Where are your stores?" type="button">Stores</button>
+          <button class="suggestion-button" data-question="What payment methods do you accept?" type="button">Payment</button>
+          <button class="suggestion-button" data-question="How can I contact customer service?" type="button">Contact</button>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages" aria-live="polite">
+        <div class="message-row assistant">
+          <div class="mini-avatar">🛍️</div>
+          <div class="message-card">
+            <div class="message-bubble">Hi! I am your Retail Fashion Assistant. How can I help you today?</div>
+            <div class="message-time"></div>
+          </div>
+        </div>
+
+        <div class="message-row assistant typing-row" id="typingIndicator" aria-hidden="true">
+          <div class="mini-avatar">🛍️</div>
+          <div class="typing-bubble" aria-label="Assistant is typing">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="composer">
+        <div class="input-shell">
+          <input
+            id="messageInput"
+            type="text"
+            autocomplete="off"
+            placeholder="Ask a question about Retail Fashion..."
+            aria-label="Enter your message"
+          />
+          <button class="send-button" id="sendButton" type="button" aria-label="Send message">➤</button>
+        </div>
+        <div class="composer-note">Press Enter to send</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /*
+      RETAIL FASHION KNOWLEDGE BASE
+      All chatbot information is stored locally in this file.
+      No external service, database or API is used.
+    */
+    const knowledgeBase = {
+      products: {
+        keywords: [
+          "product", "products", "sell", "selling", "stock", "have", "available",
+          "clothes", "clothing", "fashion", "collection", "collections",
+          "men", "mens", "men's", "women", "womens", "women's", "kids", "children",
+          "accessory", "accessories", "lifestyle", "polo", "polo shirt", "t shirt",
+          "t-shirt", "jeans", "jacket", "jackets", "sneaker", "sneakers",
+          "dress", "dresses", "blouse", "blouses", "skirt", "skirts",
+          "handbag", "handbags", "heel", "heels", "shorts", "school bag",
+          "watch", "watches", "belt", "belts", "wallet", "wallets", "cap", "caps",
+          "sunglasses", "water bottle", "travel bag", "tote bag", "umbrella"
+        ],
+        answer: `
+          Retail Fashion sells:
+          <ul>
+            <li><strong>Men's Clothing:</strong> Polo Shirts, T-Shirts, Jeans, Jackets and Sneakers</li>
+            <li><strong>Women's Clothing:</strong> Dresses, Blouses, Skirts, Handbags and Heels</li>
+            <li><strong>Kids' Clothing:</strong> T-Shirts, Shorts, Dresses and School Bags</li>
+            <li><strong>Accessories:</strong> Watches, Belts, Wallets, Caps and Sunglasses</li>
+            <li><strong>Lifestyle Products:</strong> Water Bottles, Travel Bags, Tote Bags and Umbrellas</li>
+          </ul>
+        `
+      },
+
+      returns: {
+        keywords: [
+          "return", "returns", "refund", "refunds", "exchange", "exchanges",
+          "receipt", "tags", "tag", "unused", "clearance", "customised",
+          "customized", "gift card", "gift cards", "send back", "money back"
+        ],
+        answer: `
+          Customers may return eligible products within <strong>30 days</strong>.
+          <ul>
+            <li>Original receipt required</li>
+            <li>Original tags must be attached</li>
+            <li>Product must be unused</li>
+          </ul>
+          Clearance items, customised products and gift cards cannot be returned.<br><br>
+          Refunds take approximately <strong>7–10 business days</strong>.
+        `
+      },
+
+      delivery: {
+        keywords: [
+          "delivery", "deliver", "shipping", "ship", "courier", "standard",
+          "express", "next business day", "self collection", "self-collection",
+          "collect", "collection", "tracking", "dispatch", "delivery charge",
+          "delivery fee", "free delivery", "sgd80", "$80", "5.90", "singapore"
+        ],
+        answer: `
+          Retail Fashion delivers throughout Singapore.
+          <ul>
+            <li><strong>Standard Delivery:</strong> 2–4 business days</li>
+            <li><strong>Express Delivery:</strong> Next business day</li>
+            <li><strong>Store Self Collection:</strong> Available within 24 hours</li>
+          </ul>
+          Orders above <strong>SGD80</strong> receive free delivery. Orders below SGD80 have a delivery charge of <strong>SGD5.90</strong>.<br><br>
+          Tracking information is sent by email after dispatch.
+        `
+      },
+
+      stores: {
+        keywords: [
+          "store", "stores", "outlet", "outlets", "location", "locations",
+          "branch", "branches", "address", "addresses", "where", "orchard",
+          "tampines", "vivocity", "vivo city", "harbourfront", "harbour front"
+        ],
+        answer: `
+          Retail Fashion has three stores:
+          <ul>
+            <li><strong>Orchard Flagship Store</strong><br>123 Orchard Road<br>Singapore</li>
+            <li><strong>Tampines Mall</strong><br>4 Tampines Central 5<br>Singapore</li>
+            <li><strong>VivoCity</strong><br>1 HarbourFront Walk<br>Singapore</li>
+          </ul>
+        `
+      },
+
+      hours: {
+        keywords: [
+          "operating hours", "opening hours", "business hours", "hours",
+          "open", "opening", "close", "closing", "what time", "when are you open",
+          "10am", "10 am", "10pm", "10 pm", "daily"
+        ],
+        answer: `All Retail Fashion stores are open <strong>daily from 10:00 AM to 10:00 PM</strong>.`
+      },
+
+      payment: {
+        keywords: [
+          "payment", "payments", "pay", "paying", "card", "cards",
+          "visa", "mastercard", "master card", "american express", "amex",
+          "nets", "paynow", "apple pay", "google pay", "credit card", "debit card"
+        ],
+        answer: `
+          Retail Fashion accepts:
+          <ul>
+            <li>Visa</li>
+            <li>Mastercard</li>
+            <li>American Express</li>
+            <li>NETS</li>
+            <li>PayNow</li>
+            <li>Apple Pay</li>
+            <li>Google Pay</li>
+          </ul>
+        `
+      },
+
+      contact: {
+        keywords: [
+          "contact", "customer service", "support", "help", "email",
+          "phone", "telephone", "call", "reach", "support@retailfashion.com.sg",
+          "6123 4567"
+        ],
+        answer: `
+          You can contact Retail Fashion Customer Service through:
+          <ul>
+            <li><strong>Email:</strong> <a href="mailto:support@retailfashion.com.sg">support@retailfashion.com.sg</a></li>
+            <li><strong>Phone:</strong> +65 6123 4567</li>
+          </ul>
+        `
+      },
+
+      services: {
+        keywords: [
+          "service", "services", "click and collect", "click & collect",
+          "gift wrapping", "gift wrap", "product exchange", "loyalty",
+          "membership", "personal shopping", "shopping assistance"
+        ],
+        answer: `
+          Retail Fashion provides:
+          <ul>
+            <li>Click & Collect</li>
+            <li>Gift Wrapping</li>
+            <li>Product Exchange</li>
+            <li>Loyalty Membership</li>
+            <li>Personal Shopping Assistance</li>
+          </ul>
+        `
+      }
+    };
+
+    const unknownAnswer = "I'm sorry, I couldn't find that information.";
+
+    let audioContext = null;
+    let chatbotBusy = false;
+
+    const chatMessages = document.getElementById("chatMessages");
+    const typingIndicator = document.getElementById("typingIndicator");
+    const messageInput = document.getElementById("messageInput");
+    const sendButton = document.getElementById("sendButton");
+
+    /* Browser-generated sounds */
+    function initialiseAudio() {
+      if (!audioContext) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          audioContext = new AudioContextClass();
+        }
+      }
+
+      if (audioContext && audioContext.state === "suspended") {
+        audioContext.resume();
+      }
+    }
+
+    function playTone(frequency, duration, type = "sine", volume = 0.05, delay = 0) {
+      initialiseAudio();
+      if (!audioContext) return;
+
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      const startTime = audioContext.currentTime + delay;
+
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, startTime);
+
+      gain.gain.setValueAtTime(0.0001, startTime);
+      gain.gain.exponentialRampToValueAtTime(volume, startTime + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration + 0.03);
+    }
+
+    function playSendSound() {
+      playTone(440, 0.08, "sine", 0.04);
+      playTone(610, 0.08, "sine", 0.035, 0.05);
+    }
+
+    function playSuggestionSound() {
+      playTone(520, 0.07, "triangle", 0.04);
+    }
+
+    function playReplySound() {
+      playTone(660, 0.1, "sine", 0.045);
+      playTone(880, 0.14, "sine", 0.04, 0.08);
+    }
+
+    function playUnknownSound() {
+      playTone(300, 0.14, "triangle", 0.05);
+      playTone(220, 0.18, "triangle", 0.045, 0.1);
+    }
+
+    function getCurrentTime() {
+      return new Intl.DateTimeFormat([], {
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(new Date());
+    }
+
+    function setWelcomeTimestamp() {
+      const timestamp = chatMessages.querySelector(".message-time");
+      if (timestamp) timestamp.textContent = getCurrentTime();
+    }
+
+    function scrollConversationToBottom() {
+      requestAnimationFrame(() => {
+        chatMessages.scrollTo({
+          top: chatMessages.scrollHeight,
+          behavior: "smooth"
+        });
+      });
+    }
+
+    function addMessage(content, sender) {
+      const row = document.createElement("div");
+      row.className = `message-row ${sender}`;
+
+      if (sender === "assistant") {
+        const avatar = document.createElement("div");
+        avatar.className = "mini-avatar";
+        avatar.textContent = "🛍️";
+        row.appendChild(avatar);
+      }
+
+      const messageCard = document.createElement("div");
+      messageCard.className = "message-card";
+
+      const bubble = document.createElement("div");
+      bubble.className = "message-bubble";
+
+      if (sender === "assistant") {
+        bubble.innerHTML = content;
+      } else {
+        bubble.textContent = content;
+      }
+
+      const timestamp = document.createElement("div");
+      timestamp.className = "message-time";
+      timestamp.textContent = getCurrentTime();
+
+      messageCard.appendChild(bubble);
+      messageCard.appendChild(timestamp);
+      row.appendChild(messageCard);
+
+      chatMessages.insertBefore(row, typingIndicator);
+      scrollConversationToBottom();
+    }
+
+    function normaliseText(text) {
+      return text
+        .toLowerCase()
+        .replace(/[’']/g, "'")
+        .replace(/[^a-z0-9$+@.'&\-\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    /*
+      Keyword scoring selects the best matching knowledge category.
+      Longer phrases receive a higher score than single words.
+    */
+    function findBestKnowledgeMatch(question) {
+      const normalisedQuestion = normaliseText(question);
+      let bestCategory = null;
+      let bestScore = 0;
+
+      for (const [categoryName, category] of Object.entries(knowledgeBase)) {
+        let score = 0;
+
+        for (const keyword of category.keywords) {
+          const normalisedKeyword = normaliseText(keyword);
+
+          if (normalisedQuestion.includes(normalisedKeyword)) {
+            score += normalisedKeyword.includes(" ") ? 3 : 1;
+          }
+        }
+
+        /* Extra intent patterns improve recognition of common question styles. */
+        if (categoryName === "products" &&
+            /\b(what|which)\b.*\b(sell|products|clothes|have)\b/.test(normalisedQuestion)) {
+          score += 5;
+        }
+
+        if (categoryName === "returns" &&
+            /\b(can i|may i|how do i)\b.*\b(return|exchange|refund)\b/.test(normalisedQuestion)) {
+          score += 5;
+        }
+
+        if (categoryName === "delivery" &&
+            /\b(how long|how much|what)\b.*\b(delivery|shipping)\b/.test(normalisedQuestion)) {
+          score += 5;
+        }
+
+        if (categoryName === "stores" &&
+            /\b(where|which)\b.*\b(store|outlet|location)\b/.test(normalisedQuestion)) {
+          score += 5;
+        }
+
+        if (categoryName === "hours" &&
+            /\b(when|what time)\b.*\b(open|close)\b/.test(normalisedQuestion)) {
+          score += 5;
+        }
+
+        if (categoryName === "payment" &&
+            /\b(how|what)\b.*\b(pay|payment|card)\b/.test(normalisedQuestion)) {
+          score += 5;
+        }
+
+        if (categoryName === "contact" &&
+            /\b(how|where)\b.*\b(contact|reach|call|email)\b/.test(normalisedQuestion)) {
+          score += 5;
+        }
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestCategory = categoryName;
+        }
+      }
+
+      return bestScore > 0 ? bestCategory : null;
+    }
+
+    function getChatbotAnswer(question) {
+      const categoryName = findBestKnowledgeMatch(question);
+
+      if (!categoryName) {
+        return {
+          answer: unknownAnswer,
+          found: false
+        };
+      }
+
+      return {
+        answer: knowledgeBase[categoryName].answer.trim(),
+        found: true
+      };
+    }
+
+    async function sendMessage(customQuestion = null, soundType = "send") {
+      if (chatbotBusy) return;
+
+      const question = (customQuestion ?? messageInput.value).trim();
+      if (!question) return;
+
+      initialiseAudio();
+
+      if (soundType === "suggestion") {
+        playSuggestionSound();
+      } else {
+        playSendSound();
+      }
+
+      addMessage(question, "user");
+      messageInput.value = "";
+      messageInput.focus();
+
+      chatbotBusy = true;
+      sendButton.disabled = true;
+      typingIndicator.classList.add("show");
+      typingIndicator.setAttribute("aria-hidden", "false");
+      scrollConversationToBottom();
+
+      await new Promise(resolve => setTimeout(resolve, 700));
+
+      typingIndicator.classList.remove("show");
+      typingIndicator.setAttribute("aria-hidden", "true");
+
+      const response = getChatbotAnswer(question);
+      addMessage(response.answer, "assistant");
+
+      if (response.found) {
+        playReplySound();
+      } else {
+        playUnknownSound();
+      }
+
+      chatbotBusy = false;
+      sendButton.disabled = false;
+    }
+
+    function resetChat() {
+      const rows = [...chatMessages.querySelectorAll(".message-row:not(#typingIndicator)")];
+      rows.forEach(row => row.remove());
+
+      const welcomeRow = document.createElement("div");
+      welcomeRow.className = "message-row assistant";
+      welcomeRow.innerHTML = `
+        <div class="mini-avatar">🛍️</div>
+        <div class="message-card">
+          <div class="message-bubble">Hi! I am your Retail Fashion Assistant. How can I help you today?</div>
+          <div class="message-time">${getCurrentTime()}</div>
+        </div>
+      `;
+
+      chatMessages.insertBefore(welcomeRow, typingIndicator);
+      messageInput.value = "";
+      messageInput.focus();
+      scrollConversationToBottom();
+      playSuggestionSound();
+    }
+
+    document.querySelectorAll(".suggestion-button").forEach(button => {
+      button.addEventListener("click", () => {
+        sendMessage(button.dataset.question, "suggestion");
+      });
+    });
+
+    sendButton.addEventListener("click", () => sendMessage());
+
+    messageInput.addEventListener("keydown", event => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+
+    document.getElementById("clearChatButton").addEventListener("click", resetChat);
+    document.getElementById("newChatButton").addEventListener("click", resetChat);
+
+    setWelcomeTimestamp();
+    messageInput.focus();
+  </script>
+</body>
+</html>

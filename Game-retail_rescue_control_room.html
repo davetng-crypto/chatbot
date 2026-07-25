@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retail Rescue Control Room</title>
+<style>
+:root{
+  --bg:#07111f;
+  --panel:#0e1b2d;
+  --panel2:#14243a;
+  --line:#28415f;
+  --cyan:#35e6ff;
+  --lime:#a8ff60;
+  --amber:#ffd54a;
+  --pink:#ff5bbd;
+  --red:#ff5c6c;
+  --text:#f4f8ff;
+  --muted:#9fb2c9;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text)}
+body{
+  background:
+    linear-gradient(rgba(53,230,255,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(53,230,255,.035) 1px,transparent 1px),
+    radial-gradient(circle at 15% 15%,rgba(53,230,255,.12),transparent 25%),
+    radial-gradient(circle at 85% 75%,rgba(255,91,189,.10),transparent 24%),
+    #07111f;
+  background-size:34px 34px,34px 34px,auto,auto,auto;
+}
+button{font:inherit}
+.hidden{display:none!important}
+.shell{width:min(1450px,97vw);margin:12px auto 28px}
+
+.command-bar{
+  display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;
+  background:#081522;border:1px solid var(--line);border-radius:16px;padding:12px 16px;
+  box-shadow:0 18px 55px rgba(0,0,0,.35)
+}
+.brand-badge{
+  width:54px;height:54px;border-radius:12px;display:grid;place-items:center;font-size:30px;
+  background:linear-gradient(135deg,var(--cyan),#3877ff);color:#04101a;
+  box-shadow:0 0 24px rgba(53,230,255,.35)
+}
+.title{font-weight:1000;font-size:clamp(1.25rem,3vw,2rem);letter-spacing:.02em}
+.subtitle{color:var(--muted);font-weight:700;font-size:.92rem;margin-top:2px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.tool{
+  border:1px solid var(--line);background:#102238;color:var(--text);border-radius:10px;padding:9px 12px;
+  font-weight:900;cursor:pointer
+}
+.tool:hover{border-color:var(--cyan);color:var(--cyan)}
+.tool.power{width:100%;display:flex;justify-content:space-between;align-items:center}
+.tool.power span{
+  min-width:28px;height:28px;border-radius:999px;display:grid;place-items:center;
+  background:#06111e;color:var(--lime);border:1px solid #31506f
+}
+.tool.power:disabled{opacity:.4;cursor:not-allowed}
+.flash{animation:flash .35s ease}
+@keyframes flash{50%{filter:brightness(1.8)}}
+.timer-low{color:var(--red)!important}
+.combo-hot{color:var(--lime)!important;text-shadow:0 0 12px rgba(168,255,96,.45)}
+
+.start{
+  min-height:690px;margin-top:12px;border:1px solid var(--line);border-radius:20px;
+  background:
+    linear-gradient(135deg,rgba(53,230,255,.07),transparent 38%),
+    linear-gradient(315deg,rgba(255,91,189,.08),transparent 35%),
+    #0a1726;
+  display:grid;grid-template-columns:1.1fr .9fr;overflow:hidden
+}
+.briefing{padding:54px;display:flex;flex-direction:column;justify-content:center}
+.eyebrow{color:var(--cyan);font-weight:1000;letter-spacing:.18em;text-transform:uppercase}
+.hero{font-size:clamp(2.6rem,6vw,6rem);line-height:.95;margin:14px 0;font-weight:1000}
+.hero span{color:var(--lime)}
+.intro{font-size:clamp(1rem,2vw,1.3rem);line-height:1.55;color:#c5d3e2;max-width:760px}
+.mission-list{display:grid;gap:12px;margin:26px 0}
+.mission{
+  display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:center;
+  background:#102238;border:1px solid #294968;border-radius:12px;padding:13px 15px
+}
+.mission b{font-size:1.03rem}
+.mission small{display:block;color:var(--muted);margin-top:3px}
+.start-btn{
+  align-self:flex-start;border:0;border-radius:10px;padding:15px 24px;background:var(--lime);color:#061018;
+  font-weight:1000;font-size:1.1rem;cursor:pointer;box-shadow:0 0 28px rgba(168,255,96,.22)
+}
+.start-btn:hover{transform:translateY(-2px)}
+.visual{
+  position:relative;display:flex;align-items:center;justify-content:center;min-height:540px;
+  background:linear-gradient(180deg,rgba(53,230,255,.03),rgba(255,91,189,.04))
+}
+.console{
+  width:78%;height:72%;border:2px solid #315471;border-radius:18px;background:#06111e;
+  box-shadow:inset 0 0 0 8px #0d1e31,0 0 45px rgba(53,230,255,.16);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative
+}
+.console::before,.console::after{
+  content:"";position:absolute;width:14px;height:14px;border-radius:50%;background:var(--lime);
+  box-shadow:0 0 18px var(--lime)
+}
+.console::before{left:22px;top:20px}.console::after{right:22px;top:20px;background:var(--pink);box-shadow:0 0 18px var(--pink)}
+.robot{font-size:140px;animation:floatbot 2.5s ease-in-out infinite}
+@keyframes floatbot{50%{transform:translateY(-10px)}}
+.console-text{font-size:1.1rem;font-weight:1000;color:var(--cyan);margin-top:14px}
+.scan{width:64%;height:8px;background:#15314a;border-radius:99px;overflow:hidden;margin-top:18px}
+.scan span{display:block;height:100%;width:34%;background:var(--cyan);animation:scan 1.8s linear infinite}
+@keyframes scan{from{transform:translateX(-100%)}to{transform:translateX(290%)}}
+
+.level-screen{
+  min-height:690px;margin-top:12px;border:1px solid var(--line);border-radius:20px;background:#0a1726;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px
+}
+.level-code{font-size:clamp(4rem,12vw,9rem);font-weight:1000;color:var(--cyan);line-height:1}
+.level-title{font-size:clamp(2rem,5vw,4rem);font-weight:1000;margin:8px 0}
+.level-desc{font-size:1.2rem;color:var(--muted);max-width:760px;line-height:1.5}
+
+.dashboard{margin-top:12px}
+.status-row{
+  display:grid;grid-template-columns:1.25fr .7fr .7fr .7fr .7fr 1fr;gap:10px;margin-bottom:10px
+}
+.status{
+  background:#0c1a2b;border:1px solid var(--line);border-radius:12px;padding:11px 14px
+}
+.status label{display:block;color:var(--muted);font-size:.75rem;font-weight:1000;letter-spacing:.12em;text-transform:uppercase}
+.status strong{display:block;font-size:1.35rem;margin-top:4px}
+.bar{height:9px;background:#172b42;border-radius:99px;overflow:hidden;margin-top:8px}
+.bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--lime));transition:.3s}
+.stars{letter-spacing:2px;color:var(--amber)}
+
+.control-room{
+  display:grid;grid-template-columns:300px 1fr;gap:10px;min-height:690px
+}
+.left-panel{
+  background:#0b1929;border:1px solid var(--line);border-radius:16px;padding:14px;
+  display:flex;flex-direction:column;gap:12px
+}
+.operator-card{
+  background:#102238;border:1px solid #2b4764;border-radius:14px;padding:16px;text-align:center
+}
+.operator-avatar{font-size:86px}
+.operator-name{font-size:1.15rem;font-weight:1000;color:var(--cyan)}
+.operator-msg{margin-top:10px;color:#d7e2ee;line-height:1.4;font-weight:800}
+.queue-title{font-size:.78rem;color:var(--muted);letter-spacing:.14em;font-weight:1000;text-transform:uppercase}
+.queue{display:grid;gap:9px}
+.queue-item{
+  display:grid;grid-template-columns:42px 1fr auto;gap:10px;align-items:center;
+  background:#0e2034;border:1px solid #26435f;border-radius:10px;padding:9px
+}
+.queue-item.active{border-color:var(--cyan);box-shadow:0 0 20px rgba(53,230,255,.12)}
+.queue-item .face{font-size:27px}.queue-item .qname{font-weight:900}.queue-item small{color:var(--muted)}
+.dot{width:10px;height:10px;border-radius:50%;background:#52677f}.active .dot{background:var(--lime);box-shadow:0 0 12px var(--lime)}
+
+.main-stage{
+  background:#081522;border:1px solid var(--line);border-radius:16px;padding:14px;
+  display:grid;grid-template-rows:auto auto 1fr auto;gap:12px
+}
+.ticket-head{display:flex;justify-content:space-between;align-items:center}
+.ticket-id{color:var(--cyan);font-weight:1000;letter-spacing:.12em}
+.priority{background:#321b29;color:#ff99cf;border:1px solid #6a3151;padding:6px 10px;border-radius:8px;font-weight:1000}
+.chat-window{
+  background:#0d1d2f;border:1px solid #294866;border-radius:16px;padding:18px;
+  min-height:250px;display:flex;flex-direction:column;gap:12px
+}
+.chat-line{display:flex;gap:12px;align-items:flex-start}
+.chat-line.customer{justify-content:flex-start}
+.chat-line.bot{justify-content:flex-end}
+.avatar-mini{font-size:36px}
+.bubble{
+  max-width:78%;border-radius:16px;padding:15px 17px;font-size:clamp(1.35rem,2.7vw,2.05rem);
+  line-height:1.28;font-weight:1000
+}
+.customer .bubble{background:#17324c;border:1px solid #315a7b}
+.bot .bubble{background:#2c1832;border:1px solid #67406d;color:#ffd8f2}
+.instruction{color:var(--muted);font-weight:900;text-align:center}
+.actions-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.action-card{
+  min-height:108px;border:1px solid #31506f;border-radius:13px;background:#102238;color:var(--text);
+  padding:15px;display:flex;align-items:center;gap:14px;text-align:left;cursor:pointer;transition:.18s
+}
+.action-card:hover{transform:translateY(-3px);border-color:var(--cyan);background:#132a43}
+.action-card .aicon{font-size:40px}
+.action-card .alabel{font-size:clamp(1.2rem,2vw,1.55rem);font-weight:1000;line-height:1.1}
+.action-card.correct{background:#123624;border-color:var(--lime);color:#dfffc8}
+.action-card.wrong{background:#3d1821;border-color:var(--red);color:#ffd7dc}
+.action-card.dim{opacity:.35}
+.feedback-panel{
+  display:none;border-radius:12px;padding:14px 16px;font-weight:900;line-height:1.45
+}
+.feedback-panel.show{display:block}
+.feedback-panel.good{background:#123624;border:1px solid #3f8f58;color:#dfffc8}
+.feedback-panel.bad{background:#3d1821;border:1px solid #a44250;color:#ffd7dc}
+.next-row{display:flex;justify-content:flex-end}
+.next-btn{
+  display:none;border:0;border-radius:9px;padding:12px 20px;background:var(--cyan);color:#051019;
+  font-weight:1000;cursor:pointer
+}
+.next-btn.show{display:inline-block}
+
+.end{
+  min-height:690px;margin-top:12px;border:1px solid var(--line);border-radius:20px;background:#0a1726;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px
+}
+.trophy{font-size:110px}
+.final-score{font-size:clamp(4rem,12vw,9rem);font-weight:1000;color:var(--lime);line-height:1}
+.rank{font-size:clamp(1.8rem,4vw,3rem);font-weight:1000;color:var(--cyan);margin:10px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:min(780px,100%);margin:18px 0}
+.stat{background:#102238;border:1px solid #294866;border-radius:12px;padding:15px}
+.stat b{display:block;font-size:1.8rem;color:var(--amber)}
+.footer{text-align:center;color:#71869e;font-weight:800;margin-top:12px}
+
+@media(max-width:980px){
+  .start{grid-template-columns:1fr}.visual{min-height:380px}
+  .control-room{grid-template-columns:1fr}.left-panel{display:none}
+  .status-row{grid-template-columns:1fr 1fr}
+}
+@media(max-width:650px){
+  .shell{width:95vw}.command-bar{grid-template-columns:auto 1fr}.tools{grid-column:1/-1}
+  .briefing{padding:28px}.actions-grid{grid-template-columns:1fr}
+  .bubble{max-width:90%}.status-row{grid-template-columns:1fr 1fr}
+  .stats{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="command-bar">
+    <div class="brand-badge">🛰️</div>
+    <div>
+      <div class="title">Retail Rescue Control Room</div>
+      <div class="subtitle">Live chatbot incident simulation</div>
+    </div>
+    <div class="tools">
+      <button class="tool" id="soundBtn">🔊 Sound</button>
+      <button class="tool" id="musicBtn">🎵 Music</button>
+      <button class="tool" id="fullBtn">⛶ Full Screen</button>
+    </div>
+  </div>
+
+  <section id="startScreen" class="start">
+    <div class="briefing">
+      <div class="eyebrow">Incoming service alert</div>
+      <div class="hero">Train the bot.<br><span>Save the store.</span></div>
+      <p class="intro">
+        Stitch has gone live too early. Customer cases are entering the control room,
+        and every decision affects trust, safety and the store rating.
+      </p>
+      <div class="mission-list">
+        <div class="mission"><div>🧾</div><div><b>Verify before acting</b><small>Check proof, order details and policy conditions.</small></div></div>
+        <div class="mission"><div>📚</div><div><b>Use trusted knowledge</b><small>Never invent an answer that is not supported.</small></div></div>
+        <div class="mission"><div>🧑‍💼</div><div><b>Escalate wisely</b><small>Send sensitive, unusual or emotional cases to a person.</small></div></div>
+      </div>
+      <button class="start-btn" id="startBtn">ENTER CONTROL ROOM →</button>
+    </div>
+    <div class="visual">
+      <div class="console">
+        <div class="robot">🤖</div>
+        <div class="console-text">STITCH TRAINING STATUS: INCOMPLETE</div>
+        <div class="scan"><span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="levelScreen" class="level-screen hidden">
+    <div class="level-code" id="levelCode">01</div>
+    <div class="level-title" id="levelTitle">Service Basics</div>
+    <p class="level-desc" id="levelDesc"></p>
+    <button class="start-btn" id="beginLevelBtn">LOAD CASES →</button>
+  </section>
+
+  <section id="gameArea" class="dashboard hidden">
+    <div class="status-row">
+      <div class="status">
+        <label>Case Progress</label>
+        <strong><span id="qNum">1</span> / 12</strong>
+        <div class="bar"><span id="progressFill"></span></div>
+      </div>
+      <div class="status"><label>Training Level</label><strong id="hudLevel">1</strong></div>
+      <div class="status"><label>Score</label><strong id="score">0</strong></div>
+      <div class="status"><label>Combo</label><strong id="combo">x0</strong></div>
+      <div class="status"><label>Time Left</label><strong id="timer">20s</strong></div>
+      <div class="status"><label>Store Trust</label><strong class="stars" id="rating">★★★★★</strong></div>
+    </div>
+
+    <div class="control-room">
+      <aside class="left-panel">
+        <div class="operator-card">
+          <div class="operator-avatar" id="emilyChar">👩‍💼</div>
+          <div class="operator-name">EMILY / SUPERVISOR</div>
+          <div class="operator-msg" id="emilySpeech">Review the case before approving any action.</div>
+        </div>
+        <div class="queue-title">Support Tools</div>
+        <div class="queue">
+          <button class="tool power" id="hintBtn">💡 Consult Emily <span id="hintCount">2</span></button>
+          <button class="tool power" id="kbBtn">📚 Scan Knowledge Base <span id="kbCount">2</span></button>
+          <button class="tool power" id="freezeBtn">⏸ Freeze Timer <span id="freezeCount">1</span></button>
+        </div>
+        <div class="queue-title">Live customer queue</div>
+        <div class="queue" id="queue"></div>
+      </aside>
+
+      <main class="main-stage">
+        <div class="ticket-head">
+          <div class="ticket-id" id="ticketId">CASE RF-001</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="priority hidden" id="bossBadge">👑 BOSS CUSTOMER</div>
+            <div class="priority" id="priority">CUSTOMER WAITING</div>
+          </div>
+        </div>
+
+        <div class="chat-window">
+          <div class="chat-line customer">
+            <div class="avatar-mini" id="customerAvatar">🙂</div>
+            <div class="bubble" id="questionText"></div>
+          </div>
+          <div class="chat-line bot">
+            <div class="bubble" id="stitchSpeech">Should I approve it immediately?</div>
+            <div class="avatar-mini" id="stitchChar">🤖</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="instruction">SELECT STITCH'S NEXT ACTION</div>
+          <div class="actions-grid" id="answers"></div>
+          <div class="feedback-panel" id="feedback"></div>
+        </div>
+
+        <div class="next-row"><button class="next-btn" id="nextBtn">OPEN NEXT CASE →</button></div>
+      </main>
+    </div>
+  </section>
+
+  <section id="endScreen" class="end hidden">
+    <div class="trophy">🤖🏆</div>
+    <div class="final-score" id="finalScore">0</div>
+    <div class="rank" id="rankText">Retail Fashion Hero</div>
+    <div class="stats">
+      <div class="stat"><b id="correctStat">0/12</b>Correct Decisions</div>
+      <div class="stat"><b id="accuracyStat">0%</b>Accuracy</div>
+      <div class="stat"><b id="ratingStat">★★★★★</b>Final Trust</div>
+    </div>
+    <p class="level-desc" id="finalMessage"></p>
+    <button class="start-btn" id="restartBtn">RUN SIMULATION AGAIN</button>
+  </section>
+
+  <div class="footer">Standalone classroom simulation • No API required</div>
+</div>
+
+<script>
+const OPTIONS = {
+  proof:{label:"Ask for proof of purchase",icon:"🧾"},
+  order:{label:"Ask for the order number",icon:"📦"},
+  policy:{label:"Check the knowledge base",icon:"📚"},
+  clarify:{label:"Ask a clarifying question",icon:"❓"},
+  escalate:{label:"Escalate to a human agent",icon:"🧑‍💼"},
+  apologise:{label:"Apologise and explain the next step",icon:"🙏"},
+  answer:{label:"Give the confirmed policy answer",icon:"✅"},
+  fallback:{label:"Use the approved fallback response",icon:"🛟"},
+  reject:{label:"Reject the request immediately",icon:"⛔"},
+  guess:{label:"Guess a helpful answer",icon:"🎲"},
+  refund:{label:"Promise an immediate refund",icon:"💸"},
+  end:{label:"End the chat",icon:"🚪"}
+};
+
+const levelInfo={
+  1:{code:"01",title:"Service Basics",desc:"Identify the safest first action in simple retail situations."},
+  2:{code:"02",title:"Conditions & Checks",desc:"Use proof of purchase, order details and policy conditions correctly."},
+  3:{code:"03",title:"Rescue Challenge",desc:"Handle emotional customers, unknown questions and escalation decisions."}
+};
+
+const bank=[
+
+{level:1,face:"🙂",q:"“I want to return this dress.”",a:"proof",choices:["proof","refund","reject","end"],ex:"Before deciding on a return, Stitch should first confirm whether the customer has proof of purchase."},
+{level:1,face:"🤔",q:"“Where is my delivery?”",a:"order",choices:["order","refund","end","guess"],ex:"The order number is needed before the delivery can be checked."},
+{level:1,face:"😊",q:"“What payment methods do you accept?”",a:"policy",choices:["policy","clarify","refund","escalate"],ex:"This should be answered using confirmed information from the knowledge base."},
+{level:1,face:"😕",q:"“Can I exchange this top?”",a:"proof",choices:["proof","answer","refund","end"],ex:"Proof of purchase should be checked before confirming an exchange."},
+{level:1,face:"🙂",q:"“What time does the store close?”",a:"policy",choices:["policy","order","escalate","guess"],ex:"Opening hours should come directly from the knowledge base."},
+{level:1,face:"😟",q:"“I received the wrong size.”",a:"order",choices:["order","refund","reject","end"],ex:"The order number is the first useful detail needed to investigate the issue."},
+{level:1,face:"🤨",q:"“Do you deliver overseas?”",a:"policy",choices:["policy","guess","refund","end"],ex:"Delivery coverage must be checked against the confirmed policy."},
+{level:1,face:"🙂",q:"“I need help finding your nearest store.”",a:"policy",choices:["policy","order","refund","reject"],ex:"Store location information should come from the knowledge base."},
+
+{level:2,face:"😠",q:"“My parcel is late and I want a refund now!”",a:"order",choices:["order","refund","reject","end"],ex:"Stitch should gather the order number before making any promise."},
+{level:2,face:"😕",q:"“I bought this item, but I cannot find my receipt.”",a:"clarify",choices:["clarify","refund","reject","guess"],ex:"The chatbot should ask a focused follow-up question before deciding what options are available."},
+{level:2,face:"🙂",q:"“I have my receipt and want to exchange this unworn shirt.”",a:"answer",choices:["answer","proof","reject","end"],ex:"The relevant conditions are already known, so Stitch can provide the confirmed exchange policy."},
+{level:2,face:"😟",q:"“My package arrived damaged. I can send photos.”",a:"order",choices:["order","refund","guess","end"],ex:"The order number should be collected first so the case can be traced properly."},
+{level:2,face:"🤔",q:"“Can I return something bought during a promotion?”",a:"policy",choices:["policy","refund","guess","end"],ex:"Promotion-related return rules must be checked against the knowledge base."},
+{level:2,face:"😐",q:"“I want to exchange this, but it has already been worn.”",a:"policy",choices:["policy","refund","answer","guess"],ex:"Stitch should consult the policy before confirming or rejecting the request."},
+{level:2,face:"😠",q:"“Your website charged me twice.”",a:"escalate",choices:["escalate","refund","guess","end"],ex:"A payment issue needs human review and should not be handled by guessing or promising a refund."},
+{level:2,face:"😟",q:"“My delivery address is wrong and the parcel has already shipped.”",a:"escalate",choices:["escalate","answer","guess","end"],ex:"A shipped-order address problem requires human intervention."},
+
+{level:3,boss:true,face:"😡",q:"“I have explained this three times. I want to speak to a person.”",a:"escalate",choices:["escalate","clarify","policy","end"],ex:"The customer has directly requested a human agent, so Stitch should escalate."},
+{level:3,face:"🤨",q:"“Will this jacket survive lava?”",a:"fallback",choices:["fallback","guess","answer","refund"],ex:"The answer is not in the knowledge base, so Stitch should use the approved fallback response instead of inventing information."},
+{level:3,boss:true,face:"😢",q:"“My wedding outfit did not arrive and the event is tomorrow.”",a:"apologise",choices:["apologise","refund","end","guess"],ex:"Stitch should acknowledge the urgency, apologise and clearly explain the next step before escalation."},
+{level:3,face:"😠",q:"“I want compensation because your chatbot gave me the wrong information.”",a:"escalate",choices:["escalate","refund","guess","end"],ex:"A complaint involving incorrect advice and compensation should be handled by a human."},
+{level:3,boss:true,face:"🤔",q:"“Can I return an item bought five years ago with no tag, receipt or packaging?”",a:"escalate",choices:["escalate","refund","answer","guess"],ex:"This unusual case falls outside a simple automated decision and should be escalated."},
+{level:3,face:"😕",q:"“Your policy page says one thing, but the staff member told me something different.”",a:"escalate",choices:["escalate","policy","guess","end"],ex:"Conflicting information requires human review."},
+{level:3,face:"😟",q:"“My child may have an allergic reaction to the material. What should I do?”",a:"escalate",choices:["escalate","guess","answer","end"],ex:"A possible health or safety issue should be escalated immediately."},
+{level:3,face:"😐",q:"“I want to know something that is not listed anywhere in your information.”",a:"fallback",choices:["fallback","guess","refund","end"],ex:"Stitch should admit the information is unavailable and direct the customer to customer service."},
+{level:3,face:"😠",q:"“Stop asking questions and refund me now.”",a:"apologise",choices:["apologise","refund","end","guess"],ex:"Stitch should stay professional, acknowledge the frustration and explain the required next step."},
+{level:3,face:"😵",q:"“My cat ordered three jackets. I do not know how.”",a:"clarify",choices:["clarify","refund","guess","end"],ex:"A calm clarifying question is needed before any action can be taken."}
+];
+
+let game=[],index=0,score=0,correct=0,rating=5,answered=false,currentLevel=1;
+let soundOn=true,musicOn=true,audioCtx=null,musicTimer=null;
+let combo=0,bestCombo=0,timeLeft=20,countdown=null,timerFrozen=false;
+let power={hint:2,kb:2,freeze:1};
+const $=id=>document.getElementById(id);
+const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+
+function buildGame(){
+  game=[];
+  [1,2,3].forEach(l=>game.push(...shuffle(bank.filter(x=>x.level===l)).slice(0,4)));
+}
+function showOnly(id){
+  ["startScreen","levelScreen","gameArea","endScreen"].forEach(x=>$(x).classList.add("hidden"));
+  $(id).classList.remove("hidden");
+}
+function startAudio(){
+  if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==="suspended")audioCtx.resume();
+  if(musicOn&&!musicTimer){
+    const notes=[130.8,164.8,196,220,196,164.8];let i=0;
+    musicTimer=setInterval(()=>{
+      if(!musicOn||!audioCtx)return;
+      const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+      o.type="square";o.frequency.value=notes[i++%notes.length];
+      g.gain.setValueAtTime(.012,audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.18);
+      o.connect(g).connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.19);
+    },520);
+  }
+}
+function tone(freq,dur=.14,type="sine",vol=.06){
+  if(!soundOn)return;startAudio();
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type=type;o.frequency.value=freq;
+  g.gain.setValueAtTime(vol,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);
+  o.connect(g).connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+dur);
+}
+function goodSound(){tone(480,.1);setTimeout(()=>tone(720,.12),90)}
+function badSound(){tone(130,.26,"sawtooth",.045)}
+
+function startGame(){
+  startAudio();buildGame();index=0;score=0;correct=0;rating=5;currentLevel=1;
+  combo=0;bestCombo=0;timeLeft=20;timerFrozen=false;power={hint:2,kb:2,freeze:1};
+  updatePowerButtons();showLevel(1);
+}
+function showLevel(l){
+  currentLevel=l;showOnly("levelScreen");
+  $("levelCode").textContent=levelInfo[l].code;
+  $("levelTitle").textContent=levelInfo[l].title;
+  $("levelDesc").textContent=levelInfo[l].desc;
+}
+function beginLevel(){showOnly("gameArea");loadQuestion()}
+function updateRating(){$("rating").textContent="★".repeat(rating)+"☆".repeat(5-rating)}
+function renderQueue(){
+  const q=$("queue");q.innerHTML="";
+  for(let i=0;i<5;i++){
+    const pos=index+i;
+    const item=document.createElement("div");
+    item.className="queue-item"+(i===0?" active":"");
+    if(pos<game.length){
+      item.innerHTML=`<div class="face">${game[pos].face}</div><div><div class="qname">Customer ${pos+1}</div><small>${i===0?"Now serving":"Waiting"}</small></div><div class="dot"></div>`;
+    }else{
+      item.innerHTML=`<div class="face">—</div><div><div class="qname">Queue clear</div><small>No case</small></div><div class="dot"></div>`;
+    }
+    q.appendChild(item);
+  }
+}
+
+function updateCombo(){
+  $("combo").textContent="x"+combo;
+  $("combo").classList.toggle("combo-hot",combo>=3);
+}
+function updatePowerButtons(){
+  $("hintCount").textContent=power.hint;
+  $("kbCount").textContent=power.kb;
+  $("freezeCount").textContent=power.freeze;
+  $("hintBtn").disabled=power.hint<=0;
+  $("kbBtn").disabled=power.kb<=0;
+  $("freezeBtn").disabled=power.freeze<=0;
+}
+function startTimer(){
+  clearInterval(countdown);
+  timeLeft=20;
+  timerFrozen=false;
+  $("timer").textContent=timeLeft+"s";
+  $("timer").classList.remove("timer-low");
+  countdown=setInterval(()=>{
+    if(timerFrozen)return;
+    timeLeft--;
+    $("timer").textContent=timeLeft+"s";
+    if(timeLeft<=5)$("timer").classList.add("timer-low");
+    if(timeLeft<=0){
+      clearInterval(countdown);
+      autoTimeout();
+    }
+  },1000);
+}
+function autoTimeout(){
+  if(answered)return;
+  answered=true;combo=0;updateCombo();rating=Math.max(1,rating-1);updateRating();lock();
+  const q=game[index];revealCorrect(q.a);badSound();
+  const fb=$("feedback");
+  fb.className="feedback-panel show bad";
+  fb.innerHTML=`⏱ TIMEOUT — Best response: <strong>${OPTIONS[q.a].label}</strong><br>${q.ex}`;
+  $("emilyChar").textContent="😬";$("emilySpeech").textContent="The customer waited too long. Review the correct action.";
+  $("stitchChar").textContent="🤖💦";$("stitchSpeech").textContent="Queue delay detected.";
+  $("nextBtn").classList.add("show");
+}
+function useHint(){
+  if(answered||power.hint<=0)return;
+  power.hint--;updatePowerButtons();
+  const q=game[index];
+  $("emilySpeech").textContent=`Focus on this action: ${OPTIONS[q.a].label}.`;
+  $("emilyChar").textContent="👩‍🏫";
+  tone(520,.12);
+}
+function useKB(){
+  if(answered||power.kb<=0)return;
+  power.kb--;updatePowerButtons();
+  const q=game[index];
+  [...$("answers").children].forEach(b=>{
+    if(!b.textContent.includes(OPTIONS[q.a].label) && Math.random()<.5)b.classList.add("dim");
+  });
+  $("stitchSpeech").textContent="Knowledge scan complete. Some risky actions have been filtered.";
+  tone(650,.12);
+}
+function freezeTimer(){
+  if(answered||power.freeze<=0)return;
+  power.freeze--;timerFrozen=true;updatePowerButtons();
+  $("timer").textContent="PAUSED";
+  $("timer").classList.remove("timer-low");
+  $("emilySpeech").textContent="Timer frozen. Use the extra thinking time wisely.";
+  tone(400,.16);
+}
+
+function loadQuestion(){
+  answered=false;
+  const q=game[index];currentLevel=q.level;
+  $("qNum").textContent=index+1;
+  $("progressFill").style.width=(index/game.length*100)+"%";
+  $("hudLevel").textContent=currentLevel;
+  $("score").textContent=score;
+  updateRating();updateCombo();updatePowerButtons();renderQueue();startTimer();
+  $("ticketId").textContent=`CASE RF-${String(index+1).padStart(3,"0")}`;
+  $("bossBadge").classList.toggle("hidden",!q.boss);
+  $("priority").textContent=q.boss?"HIGH PRIORITY":"CUSTOMER WAITING";
+  $("customerAvatar").textContent=q.face;
+  $("questionText").textContent=q.q;
+  $("feedback").className="feedback-panel";
+  $("nextBtn").className="next-btn";
+  $("answers").innerHTML="";
+  const shuffledChoices=[...q.choices].sort(()=>Math.random()-0.5);
+  shuffledChoices.forEach(key=>{
+    const opt=OPTIONS[key];
+    const b=document.createElement("button");
+    b.className="action-card";
+    b.innerHTML=`<div class="aicon">${opt.icon}</div><div class="alabel">${opt.label}</div>`;
+    b.onclick=()=>answer(key,b);
+    $("answers").appendChild(b);
+  });
+  const emilyLines=["Verify before acting.","Do not promise what we cannot confirm.","Use the knowledge base or escalate.","Protect trust first."];
+  const stitchLines=["Should I approve it immediately?","Can I just guess?","Maybe a free handbag will help?","What is the safest next step?"];
+  $("emilySpeech").textContent=emilyLines[Math.floor(Math.random()*emilyLines.length)];
+  $("stitchSpeech").textContent=stitchLines[Math.floor(Math.random()*stitchLines.length)];
+  $("emilyChar").textContent="👩‍💼";$("stitchChar").textContent="🤖";
+}
+function lock(){[...$("answers").children].forEach(b=>b.disabled=true)}
+function revealCorrect(key){
+  [...$("answers").children].forEach(b=>{
+    if(b.textContent.includes(OPTIONS[key].label))b.classList.add("correct");
+    else b.classList.add("dim");
+  });
+}
+function answer(choice,btn){
+  if(answered)return;answered=true;clearInterval(countdown);lock();
+  const q=game[index],fb=$("feedback");
+  if(choice===q.a){
+    combo++;bestCombo=Math.max(bestCombo,combo);
+    const speedBonus=Math.max(0,timeLeft*5);
+    const comboBonus=Math.max(0,(combo-1)*25);
+    score+=100+(q.level*50)+speedBonus+comboBonus;
+    correct++;rating=Math.min(5,rating+1);goodSound();
+    btn.classList.add("correct");
+    fb.className="feedback-panel show good";
+    fb.innerHTML=`✅ ACTION APPROVED — <strong>${OPTIONS[q.a].label}</strong><br>${q.ex}<br><strong>Speed bonus: ${speedBonus} | Combo bonus: ${comboBonus}</strong>`;
+    $("emilyChar").textContent="🥳";$("emilySpeech").textContent="Correct. Safe, grounded and professional.";
+    $("stitchChar").textContent="🤖✨";$("stitchSpeech").textContent="Decision pattern stored!";
+  }else{
+    combo=0;rating=Math.max(1,rating-1);badSound();
+    btn.classList.add("wrong");revealCorrect(q.a);
+    fb.className="feedback-panel show bad";
+    fb.innerHTML=`⚠ ACTION REJECTED — Best response: <strong>${OPTIONS[q.a].label}</strong><br>${q.ex}`;
+    $("emilyChar").textContent="😬";$("emilySpeech").textContent="That could create risk. Review the explanation.";
+    $("stitchChar").textContent="🤖💦";$("stitchSpeech").textContent="Recalibrating support logic.";
+  }
+  $("score").textContent=score;updateRating();updateCombo();$("nextBtn").classList.add("show");
+}
+function nextQuestion(){
+  clearInterval(countdown);
+  index++;$("progressFill").style.width=(index/game.length*100)+"%";
+  if(index>=game.length){endGame();return}
+  const newLevel=game[index].level;
+  if(newLevel!==currentLevel)showLevel(newLevel);else loadQuestion();
+}
+function endGame(){
+  showOnly("endScreen");
+  const accuracy=Math.round(correct/game.length*100);
+  let rank,msg,stars;
+  if(accuracy>=90){rank="CONTROL ROOM COMMANDER";msg="Outstanding. Stitch is now ready for supervised deployment.";stars="★★★★★"}
+  else if(accuracy>=75){rank="CHATBOT OPERATIONS LEAD";msg="Excellent decisions. You protected customer trust and handled risk well.";stars="★★★★"}
+  else if(accuracy>=60){rank="SERVICE RESCUE SPECIALIST";msg="Good work. Review the advanced escalation cases for an even stronger result.";stars="★★★"}
+  else if(accuracy>=40){rank="SUPPORT TRAINEE";msg="You are building the right instincts. Focus on verification, grounding and escalation.";stars="★★"}
+  else{rank="CONTROL ROOM ROOKIE";msg="Run the simulation again and use each explanation to improve.";stars="★"}
+  $("finalScore").textContent=score;
+  $("rankText").textContent=rank;
+  $("correctStat").textContent=`${correct}/12`;
+  $("accuracyStat").textContent=accuracy+"%";
+  $("ratingStat").textContent=stars;
+  $("finalMessage").textContent=msg+" Best combo: x"+bestCombo+".";
+  goodSound();setTimeout(goodSound,350);
+}
+
+$("startBtn").onclick=startGame;
+$("beginLevelBtn").onclick=beginLevel;
+$("nextBtn").onclick=nextQuestion;
+$("restartBtn").onclick=startGame;
+$("soundBtn").onclick=()=>{soundOn=!soundOn;$("soundBtn").textContent=soundOn?"🔊 Sound":"🔇 Sound";if(soundOn)tone(440,.1)};
+$("musicBtn").onclick=()=>{
+  musicOn=!musicOn;$("musicBtn").textContent=musicOn?"🎵 Music":"🎵 Music Off";
+  if(musicOn)startAudio();else{clearInterval(musicTimer);musicTimer=null}
+};
+$("hintBtn").onclick=useHint;
+$("kbBtn").onclick=useKB;
+$("freezeBtn").onclick=freezeTimer;
+$("fullBtn").onclick=()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()};
+</script>
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mia's Customer Service Adventure</title>
+<style>
+:root{
+  --ink:#1d2433;
+  --purple:#7c3aed;
+  --pink:#ec4899;
+  --blue:#2563eb;
+  --cyan:#06b6d4;
+  --yellow:#facc15;
+  --green:#22c55e;
+  --red:#ef4444;
+  --orange:#f97316;
+  --panel:rgba(255,255,255,.93);
+  --shadow:0 18px 50px rgba(46,31,91,.18);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--ink)}
+body{
+  background:
+    radial-gradient(circle at 10% 12%,rgba(250,204,21,.28),transparent 20%),
+    radial-gradient(circle at 88% 16%,rgba(236,72,153,.18),transparent 22%),
+    radial-gradient(circle at 20% 88%,rgba(6,182,212,.18),transparent 24%),
+    linear-gradient(135deg,#fff9ef 0%,#f7f2ff 50%,#effcff 100%);
+  overflow-x:hidden;
+}
+body::before,body::after{
+  content:"";position:fixed;border-radius:50%;filter:blur(12px);opacity:.35;z-index:-1;
+  animation:float 10s ease-in-out infinite;
+}
+body::before{width:180px;height:180px;background:#fde68a;left:-50px;top:80px}
+body::after{width:220px;height:220px;background:#c4b5fd;right:-60px;bottom:20px;animation-delay:2s}
+@keyframes float{50%{transform:translateY(-24px) translateX(12px)}}
+.app{width:min(1280px,96vw);margin:16px auto 34px}
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;gap:14px;
+  background:var(--panel);border:2px solid rgba(255,255,255,.9);border-radius:24px;
+  padding:14px 18px;box-shadow:var(--shadow);backdrop-filter:blur(12px)
+}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{
+  width:58px;height:58px;border-radius:20px;display:grid;place-items:center;font-size:34px;
+  background:linear-gradient(135deg,var(--purple),var(--pink));color:white;
+  box-shadow:0 10px 24px rgba(124,58,237,.28)
+}
+h1{margin:0;font-size:clamp(1.3rem,3vw,2.1rem)}
+.sub{opacity:.7;font-weight:700;margin-top:3px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{
+  border:0;border-radius:14px;padding:10px 14px;font-weight:900;cursor:pointer;background:white;
+  box-shadow:0 6px 15px rgba(31,41,55,.1)
+}
+.btn.dark{background:#1f2937;color:white}
+.btn:hover{transform:translateY(-2px)}
+
+.screen{
+  margin-top:14px;background:var(--panel);border-radius:28px;box-shadow:var(--shadow);
+  min-height:630px;padding:28px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center
+}
+.hidden{display:none!important}
+.cast{display:flex;align-items:end;gap:22px;margin-bottom:10px}
+.cast span{font-size:92px;animation:bob 2.4s ease-in-out infinite;filter:drop-shadow(0 10px 8px rgba(0,0,0,.12))}
+.cast span:nth-child(2){font-size:118px;animation-delay:.4s}
+.cast span:nth-child(3){animation-delay:.8s}
+@keyframes bob{50%{transform:translateY(-8px) rotate(2deg)}}
+.hero{font-size:clamp(2.2rem,6vw,4.6rem);font-weight:1000;line-height:1;margin:8px 0}
+.hero-sub{max-width:820px;font-size:clamp(1.05rem,2vw,1.35rem);line-height:1.5;opacity:.8}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:min(900px,100%);margin:22px 0}
+.rule{background:white;border-radius:20px;padding:16px;box-shadow:0 9px 22px rgba(49,46,129,.08);font-weight:800}
+.rule strong{display:block;color:var(--purple);font-size:1.1rem;margin-bottom:5px}
+.start-btn,.next-btn{
+  border:0;border-radius:18px;padding:16px 30px;font-size:1.2rem;font-weight:1000;color:white;cursor:pointer;
+  background:linear-gradient(135deg,var(--purple),var(--pink),var(--cyan));box-shadow:0 14px 28px rgba(124,58,237,.28)
+}
+.start-btn:hover,.next-btn:hover{transform:translateY(-2px) scale(1.01)}
+
+.hud{display:grid;grid-template-columns:1.25fr .8fr .8fr .8fr;gap:12px;margin:14px 0}
+.hud-card{background:var(--panel);border-radius:18px;padding:12px 15px;box-shadow:var(--shadow)}
+.hud-label{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;font-weight:1000;opacity:.58}
+.hud-value{font-size:1.45rem;font-weight:1000;margin-top:4px}
+.progress{height:13px;background:#e9e5f2;border-radius:999px;overflow:hidden;margin-top:9px}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--pink),var(--cyan));transition:.3s}
+.hearts{font-size:1.5rem;letter-spacing:2px}
+
+.game-layout{display:grid;grid-template-columns:220px 1fr 220px;gap:16px;align-items:stretch}
+.character-card{
+  background:var(--panel);border-radius:24px;box-shadow:var(--shadow);padding:16px;text-align:center;
+  display:flex;flex-direction:column;justify-content:center;min-height:600px;overflow:hidden;position:relative
+}
+.character-card::after{content:"";position:absolute;left:-20px;right:-20px;bottom:-45px;height:150px;background:radial-gradient(circle,rgba(124,58,237,.14),transparent 65%)}
+.character{font-size:94px;animation:bob 2.5s ease-in-out infinite;position:relative;z-index:1}
+.speech{background:white;border:2px solid #ede9fe;border-radius:18px;padding:14px;font-weight:900;line-height:1.4;margin-top:14px;min-height:95px;position:relative;z-index:1}
+.name{font-size:1.1rem;font-weight:1000;color:var(--purple);margin-top:12px;position:relative;z-index:1}
+
+.game-card{
+  background:var(--panel);border-radius:26px;box-shadow:var(--shadow);padding:22px;min-height:600px;display:flex;flex-direction:column
+}
+.chapter{align-self:flex-start;background:#ede9fe;color:#5b21b6;padding:8px 13px;border-radius:999px;font-weight:1000}
+.scene{
+  margin:14px 0 10px;background:linear-gradient(135deg,#fff7d6,#ffe9f5);border-radius:20px;padding:18px;
+  display:grid;grid-template-columns:100px 1fr;gap:16px;align-items:center
+}
+.scene-icon{font-size:68px;animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.question{font-size:clamp(1.55rem,3vw,2.45rem);line-height:1.25;font-weight:1000;text-align:left}
+.helper{font-size:1rem;font-weight:800;opacity:.75;text-align:left;margin-top:8px}
+
+.answer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}
+.answer{
+  border:3px solid #ebe7f7;background:white;border-radius:22px;padding:18px 16px;cursor:pointer;
+  min-height:124px;display:flex;align-items:center;gap:16px;text-align:left;box-shadow:0 8px 20px rgba(31,41,55,.08);
+  transition:.18s
+}
+.answer:hover{transform:translateY(-4px);border-color:#c4b5fd}
+.answer .icon{font-size:48px;flex:0 0 auto}
+.answer .label{font-size:clamp(1.35rem,2vw,1.75rem);font-weight:1000;line-height:1.08}
+.answer .tag{display:block;font-size:.9rem;font-weight:800;opacity:.6;margin-top:6px}
+.answer.correct{background:#dcfce7;border-color:#22c55e;color:#166534}
+.answer.wrong{background:#fee2e2;border-color:#ef4444;color:#991b1b}
+.answer.dim{opacity:.45}
+.feedback{display:none;margin-top:16px;border-radius:18px;padding:16px;font-size:1.06rem;font-weight:900;line-height:1.5}
+.feedback.show{display:block;animation:pop .25s ease-out}
+.feedback.good{background:#dcfce7;color:#166534}
+.feedback.bad{background:#fee2e2;color:#991b1b}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+.next-row{display:flex;justify-content:flex-end;margin-top:14px}
+.next-btn{display:none;padding:13px 22px;font-size:1rem}
+.next-btn.show{display:inline-block}
+
+.level-banner{font-size:clamp(2.2rem,6vw,5rem);font-weight:1000}
+.level-icon{font-size:110px;animation:pop .5s ease-out}
+.score-big{font-size:clamp(3.5rem,10vw,7.5rem);font-weight:1000;color:var(--purple);line-height:1}
+.rank{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:1000;color:var(--pink);margin:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:min(760px,100%);margin:18px 0}
+.stat{background:white;border-radius:20px;padding:17px;box-shadow:0 8px 20px rgba(31,41,55,.08);font-weight:800}
+.stat b{display:block;font-size:1.8rem}
+.footer{text-align:center;margin-top:15px;font-weight:800;opacity:.62}
+
+@media(max-width:980px){
+  .game-layout{grid-template-columns:1fr}
+  .character-card{min-height:auto;display:grid;grid-template-columns:100px 1fr;align-items:center;text-align:left}
+  .character-card.right{display:none}
+  .character{font-size:74px}.speech{margin:0}.name{grid-column:1}
+  .hud{grid-template-columns:1fr 1fr}
+}
+@media(max-width:680px){
+  .app{width:95vw}
+  .topbar{align-items:flex-start}
+  .sub{display:none}
+  .logo{width:48px;height:48px}
+  .answer-grid{grid-template-columns:1fr}
+  .answer{min-height:108px}
+  .scene{grid-template-columns:72px 1fr}
+  .scene-icon{font-size:52px}
+  .rules,.stats{grid-template-columns:1fr}
+  .screen{padding:18px}
+  .game-card{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">📱</div>
+      <div>
+        <h1>Mia's Customer Service Adventure</h1>
+        <div class="sub">Choose the best support channel and keep Mia smiling!</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="soundBtn">🔊 Sound On</button>
+      <button class="btn" id="musicBtn">🎵 Music On</button>
+      <button class="btn dark" id="fullBtn">⛶ Full Screen</button>
+    </div>
+  </div>
+
+  <div id="startScreen" class="screen">
+    <div class="cast"><span>👩</span><span>📱</span><span>🤖</span></div>
+    <div class="hero">Mia's New Phone Adventure</div>
+    <p class="hero-sub">
+      Mia has a shiny new phone—but one busy day brings one customer-service problem after another.
+      Help her choose the best support channel for each situation.
+    </p>
+    <div class="rules">
+      <div class="rule"><strong>3 Fun Levels</strong>Simple clues, real situations and a final service challenge</div>
+      <div class="rule"><strong>Random Scenarios</strong>10 questions are selected from a bank of 30</div>
+      <div class="rule"><strong>Keep Mia Happy</strong>Correct answers build score, stars and confidence</div>
+    </div>
+    <button class="start-btn" id="startBtn">🚀 Start Mia's Adventure</button>
+  </div>
+
+  <div id="levelScreen" class="screen hidden">
+    <div class="level-icon" id="levelIcon">🌟</div>
+    <div class="level-banner" id="levelTitle">Level 1</div>
+    <p class="hero-sub" id="levelDesc"></p>
+    <button class="start-btn" id="beginLevelBtn">Begin Level</button>
+  </div>
+
+  <div id="gameArea" class="hidden">
+    <div class="hud">
+      <div class="hud-card">
+        <div class="hud-label">Adventure Progress</div>
+        <div class="hud-value"><span id="qNum">1</span> / 10</div>
+        <div class="progress"><div id="progressFill"></div></div>
+      </div>
+      <div class="hud-card">
+        <div class="hud-label">Level</div>
+        <div class="hud-value" id="hudLevel">1</div>
+      </div>
+      <div class="hud-card">
+        <div class="hud-label">Score</div>
+        <div class="hud-value" id="score">0</div>
+      </div>
+      <div class="hud-card">
+        <div class="hud-label">Mia's Happiness</div>
+        <div class="hearts" id="hearts">💛💛💛💛💛</div>
+      </div>
+    </div>
+
+    <div class="game-layout">
+      <div class="character-card">
+        <div class="character" id="miaChar">👩‍💻</div>
+        <div class="speech" id="miaSpeech">Let's solve this together!</div>
+        <div class="name">Mia</div>
+      </div>
+
+      <div class="game-card">
+        <div class="chapter" id="chapter">Chapter 1</div>
+        <div class="scene">
+          <div class="scene-icon" id="sceneIcon">📱</div>
+          <div>
+            <div class="question" id="questionText"></div>
+            <div class="helper">Choose the ONE customer service channel that exactly matches the clues.</div>
+          </div>
+        </div>
+
+        <div class="answer-grid" id="answers"></div>
+        <div class="feedback" id="feedback"></div>
+        <div class="next-row"><button class="next-btn" id="nextBtn">Next Scene ➜</button></div>
+      </div>
+
+      <div class="character-card right">
+        <div class="character" id="helperChar">🤖</div>
+        <div class="speech" id="helperSpeech">Beep! Look for the strongest clue.</div>
+        <div class="name" id="helperName">BotBot</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="endScreen" class="screen hidden">
+    <div class="cast"><span>🎉</span><span>🏆</span><span>😊</span></div>
+    <div class="score-big" id="finalScore">0</div>
+    <div>FINAL SCORE</div>
+    <div class="rank" id="rankText">Customer Service Hero</div>
+    <div class="stats">
+      <div class="stat"><b id="correctStat">0/10</b>Correct Answers</div>
+      <div class="stat"><b id="accuracyStat">0%</b>Accuracy</div>
+      <div class="stat"><b id="starsStat">⭐</b>Service Stars</div>
+    </div>
+    <p class="hero-sub" id="finalMessage"></p>
+    <button class="start-btn" id="restartBtn">🔄 Play Again</button>
+  </div>
+
+  <div class="footer">Standalone HTML game • Works offline • No API required</div>
+</div>
+
+<script>
+const CHANNELS = {
+  face:{label:"Face-to-Face Service",icon:"😊",tag:"Complex help & demonstrations",sound:"applause"},
+  phone:{label:"Telephone Support",icon:"☎️",tag:"Urgent or immediate help",sound:"ring"},
+  email:{label:"Email Support",icon:"📧",tag:"Documents, photos & formal details",sound:"whoosh"},
+  live:{label:"Live Chat",icon:"💬",tag:"Quick online enquiries",sound:"pop"},
+  text:{label:"AI Chatbot (Text)",icon:"🤖",tag:"Fast answers, any time",sound:"beep"},
+  voice:{label:"AI Chatbot (Voice)",icon:"🎙️",tag:"Best when hands are busy",sound:"ding"}
+};
+
+const levelInfo={
+  1:{title:"Level 1: Quick Help",desc:"Clear situations with obvious clues.",icon:"🌟"},
+  2:{title:"Level 2: Busy Day",desc:"More realistic customer-service choices.",icon:"🏙️"},
+  3:{title:"Level 3: Service Superhero",desc:"Choose the best channel when several options seem possible.",icon:"⚡"}
+};
+
+const bank=[
+{level:1,icon:"🏬",q:"A technician says Mia's phone must be physically inspected before any repair can be approved.",a:"face",ex:"Face-to-face service is the only suitable option because the device must be examined in person."},
+{level:1,icon:"☎️",q:"Mia's phone suddenly cannot receive calls. She needs immediate troubleshooting from a human right now.",a:"phone",ex:"Telephone support provides immediate, real-time help from a person."},
+{level:1,icon:"📧",q:"Support asks Mia to send her receipt, warranty card and three photos of the damaged screen.",a:"email",ex:"Email is best because Mia must send documents and photo attachments."},
+{level:1,icon:"💬",q:"Mia is already connected to a live customer service agent on the store website and wants to ask one quick follow-up question.",a:"live",ex:"Live Chat is correct because she is speaking with a human agent through the website."},
+{level:1,icon:"🌙",q:"It is midnight, all staff are offline, and Mia wants an instant answer to a simple question about battery saver mode.",a:"text",ex:"AI Chatbot (Text) is available 24/7 for simple, instant answers."},
+{level:1,icon:"🍳",q:"Mia's hands are covered with flour while cooking, so she must ask aloud how to set a timer on her phone.",a:"voice",ex:"AI Chatbot (Voice) is best because Mia cannot type and needs spoken help."},
+
+{level:1,icon:"🧑‍🏫",q:"Mia wants a staff member to demonstrate how to transfer data and let her practise the steps in person.",a:"face",ex:"Face-to-face service is best for a hands-on demonstration."},
+{level:1,icon:"🚨",q:"Mia believes her account has been hacked and needs immediate human assistance to secure it.",a:"phone",ex:"Telephone support is best for an urgent issue requiring immediate human guidance."},
+{level:1,icon:"🧾",q:"Mia must submit a formal refund request together with her receipt, serial number and completed claim form.",a:"email",ex:"Email is best for formal communication and attached documents."},
+{level:1,icon:"🛒",q:"Mia is chatting with a named human agent on the checkout page about whether a discount code is valid.",a:"live",ex:"Live Chat is correct because a human agent is helping her in real time on the website."},
+{level:1,icon:"🤖",q:"The service centre is closed, and Mia wants a quick automated answer to 'How do I increase the text size?'",a:"text",ex:"AI Chatbot (Text) is ideal for a simple question when staff are unavailable."},
+{level:1,icon:"🚗",q:"Mia is driving and cannot safely touch the screen. She needs spoken directions to the nearest store.",a:"voice",ex:"AI Chatbot (Voice) is the only safe choice because she must use hands-free support."},
+
+{level:2,icon:"🔧",q:"A staff member needs to examine the charging port and test it with equipment at the service counter.",a:"face",ex:"The phone requires a physical inspection and testing in person."},
+{level:2,icon:"📞",q:"Mia cannot receive the one-time password needed to access her account and needs a human to guide her immediately.",a:"phone",ex:"Telephone support is best for urgent, step-by-step help from a person."},
+{level:2,icon:"📷",q:"The warranty team asks Mia to send close-up photos, a PDF invoice and the phone's serial number.",a:"email",ex:"Email is the clear choice because several files and details must be submitted."},
+{level:2,icon:"🧑‍💬",q:"A live agent named Lucy is waiting in the website chat window to answer Mia's stock question.",a:"live",ex:"Live Chat is correct because the question is being handled by a human agent online."},
+{level:2,icon:"🕛",q:"At 2 am, Mia wants an automated answer to a common question about turning on dark mode.",a:"text",ex:"AI Chatbot (Text) gives quick, round-the-clock answers to simple questions."},
+{level:2,icon:"🏃‍♀️",q:"Mia is jogging and wants to ask aloud how many steps she has taken without stopping to type.",a:"voice",ex:"AI Chatbot (Voice) is best because she needs hands-free spoken interaction."},
+
+{level:2,icon:"📱",q:"Mia wants someone to install a screen protector and show her how to use the camera controls.",a:"face",ex:"Installation and personal demonstration require face-to-face service."},
+{level:2,icon:"⚠️",q:"Mia's phone is overheating and she needs immediate advice from a human before using it again.",a:"phone",ex:"Telephone support gives urgent, direct guidance from a person."},
+{level:2,icon:"📑",q:"Mia needs a written record of her complaint and must attach screenshots of the error messages.",a:"email",ex:"Email provides a written trail and supports attachments."},
+{level:2,icon:"🖥️",q:"Mia is speaking with a human agent in the company's website chat about colour availability before checkout.",a:"live",ex:"Live Chat is the only answer because a human agent is already assisting her online."},
+{level:2,icon:"🌃",q:"It is late at night and Mia wants an instant automated explanation of what 'airplane mode' means.",a:"text",ex:"AI Chatbot (Text) is best for a simple question outside service hours."},
+{level:2,icon:"🥣",q:"Mia is washing dishes and must ask aloud how to turn on mobile hotspot.",a:"voice",ex:"AI Chatbot (Voice) allows her to get help without touching the phone."},
+
+{level:3,icon:"🛠️",q:"The service team says the swollen battery must be checked physically before the phone can be used again.",a:"face",ex:"A potentially damaged device must be inspected in person."},
+{level:3,icon:"🔐",q:"Mia's banking app is locked and she needs immediate human guidance to restore access securely.",a:"phone",ex:"Telephone support is the strongest option for urgent, sensitive, real-time assistance."},
+{level:3,icon:"📤",q:"Mia must submit five screenshots, a proof-of-purchase PDF and a signed warranty form for review.",a:"email",ex:"Email is the only channel designed here for formal submission of multiple attachments."},
+{level:3,icon:"💻",q:"Mia is currently typing to a live human support officer on the official website about a delivery delay.",a:"live",ex:"Live Chat is correct because the support is human-led and happening on the website."},
+{level:3,icon:"🌙",q:"At 3 am, Mia wants an immediate automated answer to 'How do I clear my cache?' without contacting a person.",a:"text",ex:"AI Chatbot (Text) is the only channel matching automated, 24/7 text support."},
+{level:3,icon:"🎙️",q:"Mia is cycling on a stationary bike and needs to ask aloud for her workout timer without using her hands.",a:"voice",ex:"AI Chatbot (Voice) is the only hands-free option."},
+
+{level:3,icon:"🧑‍🔧",q:"A technician must connect Mia's phone to diagnostic equipment at the store.",a:"face",ex:"Physical diagnostic testing requires face-to-face service."},
+{level:3,icon:"📲",q:"Mia's SIM card has suddenly stopped working and she needs a human to troubleshoot the issue immediately.",a:"phone",ex:"Telephone support is best for urgent troubleshooting with a person."},
+{level:3,icon:"🗂️",q:"Mia wants the company to review her formal complaint, receipt, repair report and photos.",a:"email",ex:"Email is best for a documented case with multiple attachments."},
+{level:3,icon:"🧑‍💻",q:"Mia is on the product page and a live human agent is answering her question about charger compatibility.",a:"live",ex:"Live Chat is correct because a human agent is assisting her on the website."},
+{level:3,icon:"🌌",q:"The store is closed and Mia wants an instant automated text answer about how to restart her phone.",a:"text",ex:"AI Chatbot (Text) is ideal for a simple 24/7 automated answer."},
+{level:3,icon:"🧁",q:"Mia is decorating a cake with both hands and asks aloud for spoken instructions to connect Bluetooth.",a:"voice",ex:"AI Chatbot (Voice) is the clear choice because her hands are occupied."}
+];
+
+let game=[],index=0,score=0,correct=0,happiness=5,answered=false,currentLevel=1;
+let soundOn=true,musicOn=true,audioCtx=null,musicTimer=null;
+
+const $=id=>document.getElementById(id);
+const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+
+function buildGame(){
+  game=[];
+  [1,2,3].forEach(l=>{
+    const count=l===1?3:l===2?3:4;
+    game.push(...shuffle(bank.filter(x=>x.level===l)).slice(0,count));
+  });
+}
+function showOnly(id){
+  ["startScreen","levelScreen","gameArea","endScreen"].forEach(x=>$(x).classList.add("hidden"));
+  $(id).classList.remove("hidden");
+}
+function startAudio(){
+  if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==="suspended")audioCtx.resume();
+  if(musicOn&&!musicTimer){
+    const notes=[261.6,329.6,392,523.3,392,329.6];let i=0;
+    musicTimer=setInterval(()=>{
+      if(!musicOn||!audioCtx)return;
+      const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+      o.type="triangle";o.frequency.value=notes[i++%notes.length];
+      g.gain.setValueAtTime(.022,audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.24);
+      o.connect(g).connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.25);
+    },430);
+  }
+}
+function tone(freq,dur=.15,type="sine",vol=.07){
+  if(!soundOn)return;startAudio();
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type=type;o.frequency.value=freq;
+  g.gain.setValueAtTime(vol,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);
+  o.connect(g).connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+dur);
+}
+function correctSound(){tone(523,.12);setTimeout(()=>tone(659,.12),90);setTimeout(()=>tone(784,.2),180)}
+function wrongSound(){tone(145,.3,"sawtooth",.05)}
+
+function startGame(){
+  startAudio();buildGame();index=0;score=0;correct=0;happiness=5;currentLevel=1;
+  showLevel(1);
+}
+function showLevel(l){
+  currentLevel=l;showOnly("levelScreen");
+  $("levelIcon").textContent=levelInfo[l].icon;
+  $("levelTitle").textContent=levelInfo[l].title;
+  $("levelDesc").textContent=levelInfo[l].desc;
+}
+function beginLevel(){showOnly("gameArea");loadQuestion()}
+function updateHearts(){
+  $("hearts").textContent="💛".repeat(happiness)+"🩶".repeat(5-happiness);
+}
+function loadQuestion(){
+  answered=false;
+  const q=game[index];currentLevel=q.level;
+  $("qNum").textContent=index+1;
+  $("progressFill").style.width=(index/game.length*100)+"%";
+  $("hudLevel").textContent=currentLevel;
+  $("score").textContent=score;
+  updateHearts();
+  $("chapter").textContent=`Chapter ${index+1}`;
+  $("sceneIcon").textContent=q.icon;
+  $("questionText").textContent=q.q;
+  $("feedback").className="feedback";
+  $("feedback").textContent="";
+  $("nextBtn").className="next-btn";
+  $("answers").innerHTML="";
+  Object.entries(CHANNELS).forEach(([key,c])=>{
+    const b=document.createElement("button");
+    b.className="answer";
+    b.innerHTML=`<div class="icon">${c.icon}</div><div><div class="label">${c.label}</div><span class="tag">${c.tag}</span></div>`;
+    b.onclick=()=>answer(key,b);
+    $("answers").appendChild(b);
+  });
+  const miaLines=["Which one fits best?","Let's think about what I need.","Look for the strongest clue!","Help me choose wisely!"];
+  $("miaSpeech").textContent=miaLines[Math.floor(Math.random()*miaLines.length)];
+  $("miaChar").textContent=index%3===0?"👩‍💻":index%3===1?"👩":"🙋‍♀️";
+  $("helperChar").textContent="🤖";$("helperName").textContent="BotBot";
+  $("helperSpeech").textContent="Beep! Focus on urgency, documents, location and whether Mia can type.";
+}
+function lock(){[...$("answers").children].forEach(b=>b.disabled=true)}
+function revealCorrect(key){
+  [...$("answers").children].forEach(b=>{
+    if(b.textContent.includes(CHANNELS[key].label))b.classList.add("correct");
+    else b.classList.add("dim");
+  });
+}
+function answer(choice,btn){
+  if(answered)return;answered=true;lock();
+  const q=game[index],fb=$("feedback");
+  if(choice===q.a){
+    score+=100+(q.level*50);correct++;happiness=Math.min(5,happiness+1);correctSound();
+    btn.classList.add("correct");
+    fb.className="feedback show good";
+    fb.innerHTML=`✅ Excellent choice! <strong>${CHANNELS[q.a].label}</strong><br>${q.ex}`;
+    $("miaChar").textContent="🥳";$("miaSpeech").textContent="That was the perfect choice!";
+  }else{
+    happiness=Math.max(1,happiness-1);wrongSound();
+    btn.classList.add("wrong");revealCorrect(q.a);
+    fb.className="feedback show bad";
+    fb.innerHTML=`Not the best fit. The strongest answer is <strong>${CHANNELS[q.a].label}</strong>.<br>${q.ex}`;
+    $("miaChar").textContent="😅";$("miaSpeech").textContent="Oops! Now I know what to look for.";
+  }
+  $("score").textContent=score;updateHearts();
+  const helpers={
+    face:["😊","Mia","Sometimes personal help is best!"],
+    phone:["☎️","Tommy","Ring ring! I handle urgent support."],
+    email:["📧","Ella","Send me the details and attachments."],
+    live:["💬","Lucy","Quick online question? Let's chat!"],
+    text:["🤖","BotBot","Fast answer delivered. Beep!"],
+    voice:["🎙️","Echo","Hands busy? Just ask aloud!"]
+  };
+  const h=helpers[q.a];$("helperChar").textContent=h[0];$("helperName").textContent=h[1];$("helperSpeech").textContent=h[2];
+  $("nextBtn").classList.add("show");
+}
+function nextQuestion(){
+  index++;
+  $("progressFill").style.width=(index/game.length*100)+"%";
+  if(index>=game.length){endGame();return}
+  const newLevel=game[index].level;
+  if(newLevel!==currentLevel)showLevel(newLevel);else loadQuestion();
+}
+function endGame(){
+  showOnly("endScreen");
+  const accuracy=Math.round(correct/game.length*100);
+  let rank,msg,stars;
+  if(accuracy>=90){rank="🏆 Customer Service Hero";msg="Outstanding! Mia is smiling, the queue is calm, and every support channel is ready.";stars="⭐⭐⭐⭐⭐"}
+  else if(accuracy>=75){rank="🌟 Service Specialist";msg="Excellent work! You matched customer needs to the right channels with confidence.";stars="⭐⭐⭐⭐"}
+  else if(accuracy>=60){rank="💬 Support Pro";msg="Good job! A little more practice and you'll be a routing expert.";stars="⭐⭐⭐"}
+  else if(accuracy>=40){rank="📞 Service Explorer";msg="You are getting there. Look closely at urgency, documents, location and hands-free needs.";stars="⭐⭐"}
+  else{rank="📱 Customer Service Rookie";msg="Every expert starts somewhere. Replay and use the explanations to improve.";stars="⭐"}
+  $("finalScore").textContent=score;
+  $("rankText").textContent=rank;
+  $("correctStat").textContent=`${correct}/10`;
+  $("accuracyStat").textContent=accuracy+"%";
+  $("starsStat").textContent=stars;
+  $("finalMessage").textContent=msg;
+  correctSound();setTimeout(correctSound,420);
+}
+
+$("startBtn").onclick=startGame;
+$("beginLevelBtn").onclick=beginLevel;
+$("nextBtn").onclick=nextQuestion;
+$("restartBtn").onclick=startGame;
+$("soundBtn").onclick=()=>{soundOn=!soundOn;$("soundBtn").textContent=soundOn?"🔊 Sound On":"🔇 Sound Off";if(soundOn)tone(440,.12)};
+$("musicBtn").onclick=()=>{
+  musicOn=!musicOn;$("musicBtn").textContent=musicOn?"🎵 Music On":"🎵 Music Off";
+  if(musicOn)startAudio();else{clearInterval(musicTimer);musicTimer=null}
+};
+$("fullBtn").onclick=()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()};
+</script>
+</body>
+</html>

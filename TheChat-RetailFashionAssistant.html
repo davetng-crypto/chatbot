@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retail Fashion Assistant</title>
+<style>
+:root{
+  --bg:#ffffff;--panel:#f7f8fa;--line:#d8dee8;--text:#171717;--muted:#667085;
+  --user:#d9e9fb;--button:#ffffff;--dark:#202124;--accent:#4c16c9;--accent-soft:#f1ebff;
+  --shadow:0 8px 24px rgba(15,23,42,.08)
+}
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;font-family:"Segoe UI",Arial,sans-serif;color:var(--text);background:var(--bg)}
+button,input{font:inherit}
+.app{width:min(1320px,calc(100% - 32px));height:100vh;min-height:640px;margin:0 auto;display:flex;flex-direction:column;padding:14px 0 10px}
+.header{padding:0 0 8px;flex:0 0 auto}.brandline{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#e8d5ff,#ffd5e6 55%,#d9f0ff);font-size:21px}
+h1{font-size:38px;line-height:1.1;margin:0;font-weight:700}.subtitle{margin:8px 0 0;color:#5f6673;font-size:16px}
+.quick-nav{display:flex;gap:10px;flex-wrap:wrap;margin:2px 0 8px;padding:10px 0;border-bottom:1px solid #eee;flex:0 0 auto}
+.nav-chip{border:0;background:#fff;border-radius:999px;padding:11px 18px;color:var(--accent);font-weight:700;cursor:pointer;box-shadow:0 5px 14px rgba(76,22,201,.11)}
+.nav-chip:hover,.nav-chip.active{background:var(--accent);color:#fff;transform:translateY(-1px)}
+.chat-shell{flex:1;min-height:0;display:flex;flex-direction:column}.chat{flex:1;min-height:360px;overflow-y:auto;padding:8px 24px 14px 4px;scroll-behavior:smooth;scrollbar-color:#8f8f8f transparent}
+.chat::-webkit-scrollbar{width:10px}.chat::-webkit-scrollbar-track{background:transparent}.chat::-webkit-scrollbar-thumb{background:#919191;border-radius:10px}
+.message{max-width:86%;border-radius:22px;padding:18px 20px;margin:12px 0;line-height:1.55;font-size:18px}.message.user{margin-left:auto;background:var(--user)}.message.bot{background:var(--panel);border:1px solid var(--line)}
+.message strong.title{display:block;font-size:19px;margin-bottom:18px}.choice-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}.choice{border:1px solid #c8d2df;background:#fff;border-radius:24px;padding:10px 17px;cursor:pointer;font-size:17px}.choice:hover{background:#eef5fc;border-color:#9bb9d8}
+.composer-section{background:#fff;padding-top:5px;flex:0 0 auto}.composer{border-bottom:2px solid #89929f;display:flex;align-items:center;gap:14px;padding:6px 0 10px}.plus{width:50px;height:50px;border-radius:50%;border:1px solid #cbd5e1;background:#fff;cursor:pointer;font-size:32px;line-height:1;font-weight:300}.composer input{flex:1;border:0;outline:0;font-size:19px;color:#303744;min-width:0}.mic{color:#75697c;font-size:20px}.send{width:56px;height:56px;border:0;border-radius:50%;background:var(--dark);color:#fff;font-size:27px;cursor:pointer}.send:hover{background:#000}
+.prompt-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 5px}
+.prompt-title{font-weight:700;font-size:14px;color:#444}
+.prompt-toggle{border:1px solid #d4dbe5;background:#fff;border-radius:999px;padding:5px 11px;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer}
+.prompt-toggle:hover{background:var(--accent-soft)}
+.suggested{display:grid;grid-template-columns:repeat(3,minmax(210px,1fr));gap:7px;margin-top:5px;max-height:158px;overflow-y:auto;padding:1px 3px 3px 0}
+.suggested.collapsed{display:none}
+.prompt-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 13px;text-align:left;cursor:pointer;box-shadow:0 2px 5px rgba(15,23,42,.03);min-height:68px}.prompt-card:hover{border-color:#aeb9c8;box-shadow:var(--shadow);transform:translateY(-1px)}.prompt-card strong{display:block;font-size:15px;margin-bottom:3px}.prompt-card span{color:#667085;font-size:13px}.footer-note{font-size:11px;color:#8a93a0;text-align:center;margin-top:4px}
+@media(max-width:900px){.suggested{grid-template-columns:repeat(2,minmax(220px,1fr))}}
+@media(max-width:650px){.app{width:min(100% - 22px,1260px);padding-top:18px;min-height:580px}h1{font-size:30px}.subtitle{font-size:15px}.quick-nav{gap:8px}.nav-chip{padding:9px 13px}.chat{padding-right:6px}.message{max-width:94%;font-size:16px;padding:15px 16px}.composer input{font-size:16px}.plus{width:44px;height:44px;font-size:28px}.send{width:50px;height:50px;font-size:24px}.suggested{grid-template-columns:1fr}}
+
+.content-layout{flex:1;min-height:0;display:grid;grid-template-columns:320px minmax(0,1fr);gap:18px}
+.prompt-panel{min-height:0;background:#fafbff;border:1px solid #e1e6ef;border-radius:18px;padding:14px;display:flex;flex-direction:column}
+.prompt-panel-head{font-weight:700;font-size:15px;margin-bottom:10px;color:#333}
+.prompt-panel .suggested{display:flex;flex-direction:column;gap:8px;overflow-y:auto;min-height:0;padding-right:4px;margin-top:0;max-height:none}
+.prompt-panel .prompt-card{min-height:70px;padding:11px 13px;border-radius:14px}
+.prompt-panel .prompt-card strong{font-size:15px;margin-bottom:4px}
+.prompt-panel .prompt-card span{font-size:13px}
+.chat-shell{min-height:0;display:flex;flex-direction:column}
+.chat{flex:1;min-height:440px}
+@media(max-width:980px){.content-layout{grid-template-columns:260px minmax(0,1fr)}}
+@media(max-width:760px){.content-layout{grid-template-columns:1fr}.prompt-panel{max-height:260px}}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="brandline"><div class="logo" aria-hidden="true">🛍️</div><h1>Retail Fashion Assistant</h1></div>
+    <div class="subtitle">Published from Copilot Studio</div>
+  </header>
+
+  <nav class="quick-nav" id="quickNav" aria-label="Quick topics"></nav>
+
+  <div class="content-layout">
+    <aside class="prompt-panel">
+      <div class="prompt-panel-head" id="promptTitle">Suggested prompts</div>
+      <div class="suggested" id="suggested"></div>
+    </aside>
+
+    <main class="chat-shell">
+      <section class="chat" id="chat" aria-live="polite"></section>
+      <section class="composer-section">
+        <div class="composer">
+          <button class="plus" id="plusBtn" aria-label="Add attachment">＋</button>
+          <input id="chatInput" placeholder="Message Retail Fashion Assistant" autocomplete="off">
+          <span class="mic" aria-hidden="true">🎙</span>
+          <button class="send" id="sendBtn" aria-label="Send message">↑</button>
+        </div>
+        <div class="footer-note">Retail Fashion customer service assistant</div>
+      </section>
+    </main>
+  </div>
+</div>
+<script>
+const chat=document.getElementById('chat');
+const input=document.getElementById('chatInput');
+const sendBtn=document.getElementById('sendBtn');
+const suggested=document.getElementById('suggested');
+const quickNav=document.getElementById('quickNav');
+const promptTitle=document.getElementById('promptTitle');
+let awaitingProof=false;
+
+const categories={
+  Products:{label:'Products',prompts:[
+    ['What products do you sell?','Explore all available product categories.'],
+    ["Browse Men's Collection",'See clothing and footwear for men.'],
+    ["Browse Women's Collection",'See clothing and accessories for women.'],
+    ['Browse Kids Collection','See clothing and bags for children.'],
+    ['Show Fashion Accessories','View watches, belts, wallets and more.'],
+    ['Show Lifestyle Products','View travel bags, umbrellas and more.']
+  ]},
+  Returns:{label:'Returns',prompts:[
+    ['Return and Exchange Request','Assist customers with returns and exchanges.'],
+    ['What is your Return Policy?','Check return eligibility and requirements.'],
+    ['How long do I have to return an item?','Find the return time limit.'],
+    ['Can I return a clearance item?','Check whether clearance items qualify.'],
+    ['How long does a refund take?','Find the refund processing timeline.'],
+    ['What items cannot be returned?','Check non-returnable purchases.']
+  ]},
+  Delivery:{label:'Delivery',prompts:[
+    ['What are your delivery options?','Compare standard, express and collection.'],
+    ['How much is delivery?','Check delivery fees and free delivery.'],
+    ['How long does delivery take?','View expected delivery times.'],
+    ['Is delivery free?','Check the minimum spend for free delivery.'],
+    ['Can I collect my order in-store?','Learn about store self-collection.'],
+    ['How do I track my order?','Find out when tracking details are sent.']
+  ]},
+  Stores:{label:'Stores',prompts:[
+    ['Find Your Stores','See all Retail Fashion locations.'],
+    ['What are your operating hours?','Check daily store hours.'],
+    ['Orchard Flagship Store','View address and services.'],
+    ['Tampines Mall Store','View address and services.'],
+    ['VivoCity Store','View address and services.'],
+    ['Where is your headquarters?','Find the Retail Fashion headquarters.']
+  ]},
+  Payment:{label:'Payment',prompts:[
+    ['Accepted Payment Methods','View all accepted payment options.'],
+    ['Do you accept PayNow?','Check PayNow availability.'],
+    ['Can I pay using Apple Pay?','Check Apple Pay availability.'],
+    ['Do you accept Google Pay?','Check Google Pay availability.'],
+    ['Can I pay using NETS?','Check NETS availability.'],
+    ['Do you accept American Express?','Check American Express availability.']
+  ]},
+  Contact:{label:'Contact',prompts:[
+    ['Contact Customer Service','Get customer support contact details.'],
+    ['Customer Service Email','View the customer service email address.'],
+    ['Customer Service Phone Number','View the customer service telephone number.'],
+    ['Do you have an online store?','Learn about online shopping and tracking.'],
+    ['Store Opening Hours','Check when stores are open.'],
+    ['Store Services Available','View Click & Collect and other services.']
+  ]}
+};
+
+const responses={
+  'What products do you sell?':'Retail Fashion offers clothing, footwear, handbags, fashion accessories and lifestyle products for men, women and children.',
+  "Browse Men's Collection":'<strong>Men\'s Collection</strong><br>Polo Shirts, T-Shirts, Jeans, Jackets and Sneakers.',
+  "Browse Women's Collection":'<strong>Women\'s Collection</strong><br>Dresses, Blouses, Skirts, Handbags and Heels.',
+  'Browse Kids Collection':'<strong>Kids Collection</strong><br>T-Shirts, Shorts, Dresses and School Bags.',
+  'Show Fashion Accessories':'<strong>Fashion Accessories</strong><br>Watches, Belts, Wallets, Caps and Sunglasses.',
+  'Show Lifestyle Products':'<strong>Lifestyle Products</strong><br>Water Bottles, Travel Bags, Tote Bags and Umbrellas.',
+  'What is your Return Policy?':'Eligible products may be returned within <strong>30 days</strong> of purchase. Items must be unused, original tags must remain attached and proof of purchase is required. Clearance, customised and gift card purchases are not eligible.',
+  'How long do I have to return an item?':'Eligible products may be returned within <strong>30 days of purchase</strong>.',
+  'Can I return a clearance item?':'No. Clearance purchases are not eligible for returns. Customised products and gift cards are also non-returnable.',
+  'How long does a refund take?':'Approved refunds are processed to the original payment method within <strong>7–10 business days</strong> after inspection.',
+  'What items cannot be returned?':'Clearance items, customised products and gift card purchases are not eligible for returns.',
+  'What are your delivery options?':'<strong>Delivery options</strong><br>• Standard Delivery: 2–4 business days<br>• Express Delivery: Next business day<br>• Store Self-Collection: Within 24 hours',
+  'How much is delivery?':'Orders above <strong>SGD 80</strong> receive free delivery. Orders below SGD 80 are charged <strong>SGD 5.90</strong>.',
+  'How long does delivery take?':'Standard delivery takes 2–4 business days. Express delivery arrives the next business day. Store self-collection is available within 24 hours.',
+  'Is delivery free?':'Yes, for orders above <strong>SGD 80</strong>. Orders below SGD 80 have a delivery charge of SGD 5.90.',
+  'Can I collect my order in-store?':'Yes. Store self-collection is available within <strong>24 hours</strong>.',
+  'How do I track my order?':'You will receive an email confirmation with tracking details once your order has been dispatched.',
+  'Find Your Stores':'<strong>Retail Fashion stores</strong><br>• Orchard Flagship Store<br>• Tampines Mall<br>• VivoCity<br><br>All stores operate daily from 10:00 AM to 10:00 PM.',
+  'What are your operating hours?':'Retail Fashion operates daily from <strong>10:00 AM to 10:00 PM</strong>.',
+  'Orchard Flagship Store':'<strong>Orchard Flagship Store</strong><br>123 Orchard Road, #03-10, Singapore 238888<br><br>Open daily, 10:00 AM–10:00 PM.',
+  'Tampines Mall Store':'<strong>Tampines Mall</strong><br>4 Tampines Central 5, #02-18, Singapore 529510<br><br>Open daily, 10:00 AM–10:00 PM.',
+  'VivoCity Store':'<strong>VivoCity</strong><br>1 HarbourFront Walk, #02-55, Singapore 098585<br><br>Open daily, 10:00 AM–10:00 PM.',
+  'Where is your headquarters?':'Retail Fashion headquarters is at <strong>123 Orchard Road, #03-10, Singapore 238888</strong>.',
+  'Accepted Payment Methods':'Retail Fashion accepts Visa, Mastercard, American Express, PayNow, NETS, Apple Pay and Google Pay.',
+  'Do you accept PayNow?':'Yes, Retail Fashion accepts <strong>PayNow</strong>.',
+  'Can I pay using Apple Pay?':'Yes, Retail Fashion accepts <strong>Apple Pay</strong>.',
+  'Do you accept Google Pay?':'Yes, Retail Fashion accepts <strong>Google Pay</strong>.',
+  'Can I pay using NETS?':'Yes, Retail Fashion accepts <strong>NETS</strong>.',
+  'Do you accept American Express?':'Yes, Retail Fashion accepts <strong>American Express</strong>.',
+  'Contact Customer Service':'You can contact customer service by email at <strong>support@retailfashion.com.sg</strong> or by phone at <strong>+65 6123 4567</strong>.',
+  'Customer Service Email':'Customer service email: <strong>support@retailfashion.com.sg</strong>.',
+  'Customer Service Phone Number':'Customer service phone number: <strong>+65 6123 4567</strong>.',
+  'Do you have an online store?':'Yes. Customers can browse products, place orders and track deliveries online.',
+  'Store Opening Hours':'All Retail Fashion stores operate daily from <strong>10:00 AM to 10:00 PM</strong>.',
+  'Store Services Available':'Retail Fashion offers Click & Collect, Gift Wrapping, Product Exchange, Loyalty Membership and Personal Shopping Assistance.'
+};
+
+function scrollLatest(){requestAnimationFrame(()=>chat.scrollTop=chat.scrollHeight)}
+function addMessage(content,type='bot'){
+  const div=document.createElement('div');div.className=`message ${type}`;
+  if(type==='bot')div.innerHTML=content;else div.textContent=content;
+  chat.appendChild(div);scrollLatest();return div;
+}
+function renderCategory(key){
+  document.querySelectorAll('.nav-chip').forEach(btn=>btn.classList.toggle('active',btn.dataset.key===key));
+  promptTitle.textContent=`${categories[key].label} prompts`;
+  suggested.innerHTML='';
+  categories[key].prompts.forEach(([title,desc])=>{
+    const btn=document.createElement('button');btn.className='prompt-card';
+    btn.innerHTML=`<strong>${title}</strong><span>${desc}</span>`;
+    btn.onclick=()=>runPrompt(title);suggested.appendChild(btn);
+  });
+}
+Object.entries(categories).forEach(([key,data],i)=>{
+  const btn=document.createElement('button');btn.className='nav-chip'+(i===0?' active':'');btn.dataset.key=key;btn.textContent=data.label;btn.onclick=()=>renderCategory(key);quickNav.appendChild(btn);
+});
+renderCategory('Products');
+
+function startReturnFlow(showUser=true){
+  awaitingProof=true;if(showUser)addMessage('Return and Exchange Request','user');
+  const bot=addMessage(`<strong class="title">Return and Exchange Request topic triggered.</strong><div>Do you have proof of purchase, such as a receipt or order confirmation?</div><div class="choice-row"><button class="choice" data-answer="Yes">Yes</button><button class="choice" data-answer="No">No</button></div>`,'bot');
+  bot.querySelectorAll('.choice').forEach(btn=>btn.addEventListener('click',()=>handleProof(btn.dataset.answer)));
+}
+function handleProof(answer){
+  if(!awaitingProof)return;awaitingProof=false;addMessage(answer,'user');
+  if(answer==='Yes')addMessage('<strong>Thank you.</strong><br><br>Please keep your receipt or order confirmation ready. Based on our Return Policy, we can help check whether the item is eligible for a return or exchange.<br><br>Please ensure the item meets the return requirements before proceeding.','bot');
+  else addMessage('<strong>That is okay.</strong><br><br>A staff member may need to verify your purchase before the return or exchange can proceed.<br><br>Please contact customer service at support@retailfashion.com.sg or +65 6123 4567, or visit your nearest store for assistance.','bot');
+}
+function runPrompt(title){
+  if(title==='Return and Exchange Request'){startReturnFlow(true);return;}
+  addMessage(title,'user');addMessage(responses[title]||'I may need a staff member to confirm this for you.','bot');
+}
+function normaliseText(value){
+  return String(value)
+    .toLowerCase()
+    .replace(/[’']/g,'')
+    .replace(/&/g,' and ')
+    .replace(/[^a-z0-9\s]/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+function hasAny(q,terms){return terms.some(term=>q.includes(term));}
+function resolveNaturalPrompt(text){
+  const q=normaliseText(text);
+
+  // Broad topic words and common short entries
+  if(/^(store|stores|shop|shops|location|locations)$/.test(q)) return 'Find Your Stores';
+  if(/^(product|products|catalogue|catalog)$/.test(q)) return 'What products do you sell?';
+  if(/^(return|returns|refund|refunds)$/.test(q)) return 'What is your Return Policy?';
+  if(/^(delivery|shipping)$/.test(q)) return 'What are your delivery options?';
+  if(/^(payment|payments|pay)$/.test(q)) return 'Accepted Payment Methods';
+  if(/^(contact|support|help)$/.test(q)) return 'Contact Customer Service';
+  if(/^(hours|opening|closing)$/.test(q)) return 'What are your operating hours?';
+
+  // Product collections and specific products
+  if(hasAny(q,['women collection','womens collection','women clothes','womens clothes','ladies collection','ladies clothes'])) return "Browse Women's Collection";
+  if(hasAny(q,['men collection','mens collection','men clothes','mens clothes','male collection','menswear'])) return "Browse Men's Collection";
+  if(hasAny(q,['kids collection','kid collection','children collection','childrens collection','kids clothes','children clothes'])) return 'Browse Kids Collection';
+  if(hasAny(q,['handbag','handbags','heels','blouse','blouses','skirt','skirts'])) return "Browse Women's Collection";
+  if(hasAny(q,['polo shirt','polo shirts','jeans','jacket','jackets','sneaker','sneakers'])) return "Browse Men's Collection";
+  if(hasAny(q,['school bag','school bags','kids dress','childrens dress','kids shorts'])) return 'Browse Kids Collection';
+  if(hasAny(q,['watch','watches','belt','belts','wallet','wallets','cap','caps','sunglass','sunglasses','accessories','fashion accessories'])) return 'Show Fashion Accessories';
+  if(hasAny(q,['water bottle','water bottles','travel bag','travel bags','tote bag','tote bags','umbrella','umbrellas','lifestyle product','lifestyle products'])) return 'Show Lifestyle Products';
+  if(hasAny(q,['what products','products do you sell','what do you sell','product range','show products','browse products'])) return 'What products do you sell?';
+
+  // Returns and refunds
+  if(hasAny(q,['return and exchange request','want to return','would like to return','return an item','exchange an item','wrong size','exchange size','lost receipt','no receipt'])) return '__RETURN_FLOW__';
+  if(hasAny(q,['return policy','return conditions','requirements for return'])) return 'What is your Return Policy?';
+  if(hasAny(q,['how many days','how long do i have to return','return period','return window'])) return 'How long do I have to return an item?';
+  if(hasAny(q,['clearance item','sale item return','return sale item'])) return 'Can I return a clearance item?';
+  if(hasAny(q,['refund take','refund time','when will i get my refund','refund processing'])) return 'How long does a refund take?';
+  if(hasAny(q,['cannot be returned','non returnable','not eligible for return','items excluded'])) return 'What items cannot be returned?';
+
+  // Delivery
+  if(hasAny(q,['delivery options','shipping options','types of delivery'])) return 'What are your delivery options?';
+  if(hasAny(q,['delivery cost','delivery charge','shipping cost','how much is delivery'])) return 'How much is delivery?';
+  if(hasAny(q,['delivery time','how long does delivery','when will my order arrive','standard delivery','express delivery'])) return 'How long does delivery take?';
+  if(hasAny(q,['free delivery','free shipping','qualify for free delivery'])) return 'Is delivery free?';
+  if(hasAny(q,['collect in store','collect my order','self collection','store collection','click and collect'])) return 'Can I collect my order in-store?';
+  if(hasAny(q,['track my order','tracking details','order tracking','where is my order'])) return 'How do I track my order?';
+
+  // Stores and operating hours
+  if(hasAny(q,['orchard store','orchard flagship','orchard road store'])) return 'Orchard Flagship Store';
+  if(hasAny(q,['tampines store','tampines mall'])) return 'Tampines Mall Store';
+  if(hasAny(q,['vivocity store','vivo city store','vivocity'])) return 'VivoCity Store';
+  if(hasAny(q,['find stores','find store','store locations','store location','nearest store','nearby store','where are your stores','where is your store','list your stores','show stores','retail fashion stores','your stores'])) return 'Find Your Stores';
+  if(hasAny(q,['opening hours','operating hours','what time do you open','what time do you close','store hours','close today'])) return 'What are your operating hours?';
+  if(hasAny(q,['headquarters','head office','hq address'])) return 'Where is your headquarters?';
+
+  // Payment
+  if(hasAny(q,['payment methods','how can i pay','ways to pay','accepted payments'])) return 'Accepted Payment Methods';
+  if(q.includes('paynow')) return 'Do you accept PayNow?';
+  if(q.includes('apple pay')) return 'Can I pay using Apple Pay?';
+  if(q.includes('google pay')) return 'Do you accept Google Pay?';
+  if(q.includes('nets')) return 'Can I pay using NETS?';
+  if(hasAny(q,['american express','amex'])) return 'Do you accept American Express?';
+
+  // Contact and online store
+  if(hasAny(q,['contact customer service','speak to customer service','customer service contact','contact support','talk to staff'])) return 'Contact Customer Service';
+  if(hasAny(q,['customer service email','support email','email address'])) return 'Customer Service Email';
+  if(hasAny(q,['customer service phone','phone number','telephone number','call customer service'])) return 'Customer Service Phone Number';
+  if(hasAny(q,['online store','shop online','website store','buy online'])) return 'Do you have an online store?';
+  if(hasAny(q,['store services','gift wrapping','loyalty membership','personal shopping','product exchange service'])) return 'Store Services Available';
+
+  return null;
+}
+function processText(text){
+  const q=text.trim();if(!q)return;
+  if(awaitingProof){
+    if(/^(yes|y|yeah|yep|i do|have receipt|have proof)$/i.test(q)){handleProof('Yes');return;}
+    if(/^(no|n|nope|i don't|i dont|do not|without receipt|no proof)$/i.test(q)){handleProof('No');return;}
+    addMessage(q,'user');addMessage('Please answer <strong>Yes</strong> or <strong>No</strong>.<br><br>Do you have proof of purchase, such as a receipt or order confirmation?','bot');return;
+  }
+  const exact=Object.keys(responses).find(k=>normaliseText(k)===normaliseText(q));
+  if(exact){runPrompt(exact);return;}
+  const matched=resolveNaturalPrompt(q);
+  if(matched==='__RETURN_FLOW__'){addMessage(q,'user');startReturnFlow(false);return;}
+  if(matched){addMessage(q,'user');addMessage(responses[matched],'bot');return;}
+  addMessage(q,'user');addMessage('I may need a staff member to confirm this for you. Try asking about products, returns, refunds, delivery, store locations, payment methods or customer service.','bot');
+}
+function send(){
+  const text=input.value;
+  input.value='';
+  processText(text);
+}
+sendBtn.addEventListener('click',send);input.addEventListener('keydown',e=>{if(e.key==='Enter')send()});
+document.getElementById('plusBtn').addEventListener('click',()=>alert('Attachment upload is not required for this training simulation.'));
+addMessage('<strong>Hello! I am the Retail Fashion Assistant.</strong><br><br>Select a topic above or choose one of the suggested prompts below.','bot');
+</script>
+</body>
+</html>

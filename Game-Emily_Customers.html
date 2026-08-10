@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emily's Moving Bullseye Challenge</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,Helvetica,sans-serif;background:#070914;color:#fff}
+body{
+  background:
+    radial-gradient(circle at 50% 48%,rgba(38,76,255,.18),transparent 40%),
+    linear-gradient(#060812,#0c1020 58%,#16101e);
+}
+#game{position:relative;width:100vw;height:100vh;overflow:hidden;cursor:crosshair}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+.topHud{
+  position:absolute;left:2.2vw;right:5.7vw;top:2vh;
+  display:grid;grid-template-columns:1.25fr 1fr .88fr .82fr;
+  gap:1.1vw;z-index:5;pointer-events:none
+}
+.hudBox{
+  min-height:13vh;background:rgba(5,7,15,.95);
+  border:2px solid #6d41ff;border-radius:1.4vw;
+  display:flex;align-items:center;justify-content:center;gap:1vw;
+  box-shadow:0 0 22px rgba(109,65,255,.33),inset 0 0 18px rgba(130,70,255,.04)
+}
+.hudIcon{font-size:3vw}
+.hudLabel{font-size:.95vw;font-weight:900;opacity:.82;letter-spacing:.04em}
+.hudValue{font-size:3.45vw;font-weight:1000;line-height:1}
+.timerBox{border-color:#d33cff}
+.scoreBox{border-color:#ffae25}
+.streakBox{border-color:#ff6524}
+.arrowBox{border-color:#3494ff}
+#score{color:#ffd52e}
+#streak{color:#ff8c21}
+.timerBar{
+  position:absolute;left:4vw;right:4vw;bottom:1vh;height:.9vh;
+  background:#17182a;border-radius:99px;overflow:hidden;border:1px solid #6b42ff
+}
+.timerFill{height:100%;width:100%;background:linear-gradient(90deg,#ff2caf,#ff4b42)}
+
+.soundBtn{
+  position:absolute;right:1.3vw;top:2vh;width:4vw;height:4vw;z-index:8;
+  border-radius:1vw;background:#11162a;border:2px solid #5ea0ff;color:#fff;
+  font-size:2vw;cursor:pointer;box-shadow:0 0 18px rgba(94,160,255,.45)
+}
+
+.customerBanner{
+  position:absolute;left:50%;top:17.2vh;transform:translateX(-50%);
+  z-index:6;pointer-events:none;width:min(78vw,1220px);
+  min-height:10.2vh;display:flex;align-items:center;justify-content:center;gap:1.1vw;
+  background:rgba(7,8,17,.94);border:3px solid #ff3f86;border-radius:1.5vw;
+  box-shadow:0 0 28px rgba(255,63,134,.42);
+  padding:1vh 2vw
+}
+.customerLabel{
+  color:#ffd52f;font-size:2vw;font-weight:1000;letter-spacing:.03em;white-space:nowrap
+}
+.customerType{
+  color:#fff;font-size:3.25vw;font-weight:1000;line-height:1;
+  text-shadow:0 0 10px #ff3f86,0 0 22px rgba(255,63,134,.7);
+  white-space:nowrap
+}
+
+.targets{
+  position:absolute;left:5vw;right:5vw;top:33vh;bottom:16vh;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:4vw;
+  z-index:3;pointer-events:none
+}
+.targetCol{
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start
+}
+.movingUnit{
+  width:100%;display:flex;flex-direction:column;align-items:center;
+  transform:translateX(0)
+}
+.bull{
+  position:relative;width:min(27vw,34vh);aspect-ratio:1/1
+}
+.answer{
+  width:min(28vw,430px);min-height:10.5vh;margin-top:-.4vh;
+  border-radius:1.3vw;background:rgba(7,8,15,.96);color:white;
+  display:flex;align-items:center;gap:1vw;padding:1.2vh 1.2vw;
+  font-size:1.5vw;font-weight:900;line-height:1.16;
+  border:3px solid #b84eff;box-shadow:0 0 18px rgba(184,78,255,.42)
+}
+.targetCol:nth-child(2) .answer{border-color:#65e33d;box-shadow:0 0 18px rgba(101,227,61,.42)}
+.targetCol:nth-child(3) .answer{border-color:#ff8e1d;box-shadow:0 0 18px rgba(255,142,29,.42)}
+.letter{
+  width:3.5vw;height:3.5vw;min-width:3.5vw;border-radius:50%;
+  display:grid;place-items:center;border:3px solid currentColor;
+  font-size:1.8vw;font-weight:1000
+}
+.targetCol:nth-child(1) .letter{color:#b96eff}
+.targetCol:nth-child(2) .letter{color:#72ec50}
+.targetCol:nth-child(3) .letter{color:#ff9a2c}
+
+.restartBtn{
+  position:absolute;left:50%;bottom:1.7vh;transform:translateX(-50%);
+  z-index:9;width:5.4vw;height:5.4vw;border-radius:1.1vw;border:2px solid #3c98ff;
+  background:rgba(17,25,45,.95);color:#fff;font-size:2.8vw;
+  font-weight:1000;cursor:pointer;box-shadow:0 0 20px rgba(60,152,255,.42)
+}
+
+#feedback{
+  position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);
+  z-index:8;font-size:4.6vw;font-weight:1000;
+  text-align:center;text-shadow:0 5px 28px #000;pointer-events:none
+}
+#feedback small{display:block;font-size:1.25vw;margin-top:.5vh}
+
+.screen{
+  position:absolute;inset:0;display:grid;place-items:center;z-index:20;
+  background:rgba(4,6,14,.82);backdrop-filter:blur(7px)
+}
+.card{
+  width:min(700px,92vw);padding:34px;border-radius:28px;text-align:center;
+  background:linear-gradient(145deg,#27205b,#111328);
+  border:2px solid #8d45ff;box-shadow:0 30px 80px rgba(0,0,0,.55)
+}
+.card h1{font-size:clamp(38px,5vw,60px);margin:0 0 8px}
+.card p{font-size:18px;line-height:1.5;opacity:.9}
+.card button{
+  border:0;border-radius:999px;padding:14px 30px;
+  background:linear-gradient(90deg,#ffd53d,#ff9c36);
+  font-size:17px;font-weight:1000;color:#15162a;cursor:pointer
+}
+#endScreen{display:none}
+
+@media(max-width:950px){
+  .topHud{left:1.4vw;right:7vw;top:1vh;gap:1vw;grid-template-columns:repeat(2,1fr)}
+  .hudBox{min-height:8vh;border-radius:14px}
+  .hudIcon{font-size:5vw}.hudValue{font-size:5.5vw}.hudLabel{font-size:1.7vw}
+  .soundBtn{width:6vw;height:6vw;font-size:3vw}
+  .customerBanner{top:18.4vh;width:92vw;min-height:8vh}
+  .customerLabel{font-size:2.4vw}.customerType{font-size:4vw}
+  .targets{top:30vh;left:2vw;right:2vw;gap:1.2vw}
+  .bull{width:29vw}
+  .answer{width:30vw;font-size:1.75vw;min-height:9.2vh;padding:.8vh .8vw}
+  .letter{width:4.2vw;height:4.2vw;min-width:4.2vw;font-size:2.2vw}
+}
+</style>
+</head>
+<body>
+<div id="game">
+<canvas id="canvas"></canvas>
+
+<button id="soundBtn" class="soundBtn">🔊</button>
+
+<div class="topHud">
+  <div class="hudBox timerBox">
+    <div class="hudIcon">⏱</div>
+    <div>
+      <div class="hudLabel">TIME</div>
+      <div id="timer" class="hudValue">90</div>
+    </div>
+    <div class="timerBar"><div id="timerFill" class="timerFill"></div></div>
+  </div>
+
+  <div class="hudBox scoreBox">
+    <div class="hudIcon">🏆</div>
+    <div>
+      <div class="hudLabel">SCORE</div>
+      <div id="score" class="hudValue">0</div>
+    </div>
+  </div>
+
+  <div class="hudBox streakBox">
+    <div class="hudIcon">🔥</div>
+    <div>
+      <div class="hudLabel">STREAK</div>
+      <div id="streak" class="hudValue">x0</div>
+    </div>
+  </div>
+
+  <div class="hudBox arrowBox">
+    <div class="hudIcon">🏹</div>
+    <div>
+      <div class="hudLabel">ARROWS</div>
+      <div id="arrows" class="hudValue">3</div>
+    </div>
+  </div>
+</div>
+
+<div class="customerBanner">
+  <div class="customerLabel">CUSTOMER TYPE:</div>
+  <div id="customerType" class="customerType">ANGRY CUSTOMER</div>
+</div>
+
+<div id="sceneCounter" style="
+  position:absolute;
+  left:50%;
+  top:28.2vh;
+  transform:translateX(-50%);
+  z-index:6;
+  padding:.45vh 1.2vw;
+  border-radius:999px;
+  background:rgba(7,9,18,.92);
+  border:2px solid #55a7ff;
+  box-shadow:0 0 15px rgba(85,167,255,.38);
+  font-size:1.25vw;
+  font-weight:1000;
+  letter-spacing:.05em;
+  pointer-events:none;
+">SCENE 1 / 7</div>
+
+<div class="targets">
+  <div class="targetCol">
+    <div id="unit0" class="movingUnit">
+      <div class="bull"></div>
+      <div class="answer"><div class="letter">A</div><div id="ans0"></div></div>
+    </div>
+  </div>
+  <div class="targetCol">
+    <div id="unit1" class="movingUnit">
+      <div class="bull"></div>
+      <div class="answer"><div class="letter">B</div><div id="ans1"></div></div>
+    </div>
+  </div>
+  <div class="targetCol">
+    <div id="unit2" class="movingUnit">
+      <div class="bull"></div>
+      <div class="answer"><div class="letter">C</div><div id="ans2"></div></div>
+    </div>
+  </div>
+</div>
+
+<div id="feedback"></div>
+
+<button id="restartBtn" class="restartBtn">↻</button>
+
+<div id="startScreen" class="screen">
+  <div class="card">
+    <h1>🏹 Emily's Moving Bullseye Challenge</h1>
+    <p>Choose the best response and hit its moving target. The closer your shot is to the centre, the more points you score.</p>
+    <button id="startBtn">START GAME</button>
+  </div>
+</div>
+
+<div id="endScreen" class="screen">
+  <div class="card">
+    <h1>🎉 Shift Complete!</h1>
+    <p id="resultText"></p>
+    <div id="finalScore" style="font-size:72px;font-weight:1000;color:#ffd531;margin:12px 0">0</div>
+    <button id="playAgainBtn">PLAY AGAIN</button>
+  </div>
+</div>
+</div>
+
+<script>
+const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');
+let W=0,H=0,dpr=1,last=performance.now();
+let mouse={x:innerWidth/2,y:innerHeight*.78};
+let running=false,round=0,score=0,streak=0,ammo=3,timeLeft=90,timeAcc=0,session=0;
+let shots=[],particles=[],targetRects=[],feedbackTimer=0,soundOn=true;
+let units=[
+  {offset:0,dir:1,speed:40,phase:0},
+  {offset:0,dir:-1,speed:48,phase:1.5},
+  {offset:0,dir:1,speed:44,phase:3}
+];
+
+const customers=[
+ {type:"ANGRY CUSTOMER",correct:"Stay calm → Listen → Empathise → Solve",wrong:["Argue and defend the store","Ignore and serve someone else"]},
+ {type:"IMPATIENT CUSTOMER",correct:"Acknowledge → Be concise → Act quickly",wrong:["Give a long explanation","Ask them to wait without reason"]},
+ {type:"CONFUSED CUSTOMER",correct:"Ask questions → Explain → Recommend",wrong:["Tell them to choose themselves","Recommend the most expensive item"]},
+ {type:"DEMANDING CUSTOMER",correct:"Stay polite → Explain policy → Offer alternatives",wrong:["Promise everything immediately","Say no and walk away"]},
+ {type:"TALKATIVE CUSTOMER",correct:"Listen → Politely redirect → Focus on the need",wrong:["Keep chatting for a long time","Interrupt rudely"]},
+ {type:"KNOW-IT-ALL CUSTOMER",correct:"Respect → Do not argue → Provide useful information",wrong:["Prove the customer wrong","Challenge their knowledge"]},
+ {type:"DIGITAL / SELF-SERVICE CUSTOMER",correct:"Chatbot → Instant answer → Human staff when needed",wrong:["Force them to join the queue","Tell them not to use the chatbot"]}
+];
+
+function resize(){
+  dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  setTimeout(calculateTargets,30);
+}
+addEventListener('resize',resize);resize();
+
+function calculateTargets(){
+  targetRects=[...document.querySelectorAll('.bull')].map(el=>{
+    const r=el.getBoundingClientRect();
+    return {x:r.left+r.width/2,y:r.top+r.height/2,r:r.width*.47};
+  });
+}
+function shuffle(a){
+  const arr=[...a];
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+function tone(f,d,type='sine',vol=.17){
+  if(!soundOn)return;
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!window._ac)window._ac=new AC();
+    const ac=window._ac,o=ac.createOscillator(),g=ac.createGain();
+    o.type=type;o.frequency.value=f;g.gain.value=vol;
+    o.connect(g);g.connect(ac.destination);o.start();
+    g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d);
+  }catch(e){}
+}
+function shootSound(){tone(185,.07,'triangle',.23);setTimeout(()=>tone(95,.1,'sine',.12),20)}
+function hitSound(){tone(540,.09,'square',.19);setTimeout(()=>tone(760,.1,'sine',.16),55)}
+function bullSound(){tone(900,.08,'square',.23);setTimeout(()=>tone(1220,.08,'square',.20),50);setTimeout(()=>tone(1540,.11,'sine',.17),105)}
+function wrongSound(){tone(125,.14,'sawtooth',.18);setTimeout(()=>tone(85,.18,'square',.13),70)}
+function tickSound(){tone(770,.055,'square',.12)}
+function endSound(){tone(210,.18,'sawtooth',.17);setTimeout(()=>tone(130,.26,'sawtooth',.14),110)}
+
+document.getElementById('soundBtn').onclick=()=>{
+  soundOn=!soundOn;
+  document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';
+  if(soundOn)tone(660,.08,'sine',.14);
+};
+
+function newRound(){
+  if(round>=customers.length){finish();return}
+  ammo=3;document.getElementById('arrows').textContent=ammo;
+  const q=customers[round];
+  document.getElementById('customerType').textContent=q.type;
+  document.getElementById('sceneCounter').textContent='SCENE '+(round+1)+' / '+customers.length;
+  const wrongs=shuffle(q.wrong.map(x=>({text:x,correct:false})));
+  const correctPos=round%3; // Round 1=A, Round 2=B, Round 3=C, then repeat
+  const opts=[null,null,null];
+  opts[correctPos]={text:q.correct,correct:true};
+  let wi=0;
+  for(let i=0;i<3;i++){
+    if(i!==correctPos) opts[i]=wrongs[wi++];
+  }
+  window.currentOptions=opts;
+  opts.forEach((o,i)=>document.getElementById('ans'+i).textContent=o.text);
+
+  // slightly faster as rounds progress
+  units.forEach((u,i)=>{
+    u.speed=38+round*5+i*5;
+    u.offset=0;
+    u.dir=i===1?-1:1;
+  });
+
+  setTimeout(calculateTargets,70);
+}
+function reset(){
+  session++;running=true;round=0;score=0;streak=0;ammo=3;timeLeft=90;timeAcc=0;shots=[];particles=[];
+  document.getElementById('score').textContent=0;
+  document.getElementById('streak').textContent='x0';
+  document.getElementById('arrows').textContent=3;
+  document.getElementById('timer').textContent='90';
+  document.getElementById('timerFill').style.width='100%';
+  document.getElementById('sceneCounter').textContent='SCENE 1 / '+customers.length;
+  document.getElementById('feedback').innerHTML='';
+  document.getElementById('startScreen').style.display='none';
+  document.getElementById('endScreen').style.display='none';
+  units.forEach((u,i)=>{u.offset=0;u.dir=i===1?-1:1;});
+  newRound();
+}
+document.getElementById('startBtn').onclick=reset;
+document.getElementById('playAgainBtn').onclick=reset;
+document.getElementById('restartBtn').onclick=reset;
+
+canvas.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY});
+canvas.addEventListener('mousedown',fire);
+canvas.addEventListener('touchstart',e=>{const t=e.touches[0];mouse.x=t.clientX;mouse.y=t.clientY;fire()},{passive:true});
+
+function fire(){
+  if(!running||ammo<=0)return;
+  ammo--;document.getElementById('arrows').textContent=ammo;
+  shootSound();
+  shots.push({sx:W/2,sy:H+34,tx:mouse.x,ty:mouse.y,p:0,checked:false});
+}
+
+function hitCheck(s){
+  calculateTargets();
+  let idx=-1,dist=9999;
+  for(let i=0;i<targetRects.length;i++){
+    const t=targetRects[i],d=Math.hypot(s.tx-t.x,s.ty-t.y);
+    if(d<=t.r){idx=i;dist=d;break}
+  }
+  if(idx<0){
+    streak=0;document.getElementById('streak').textContent='x0';
+    showFeedback('MISS!','');wrongSound();
+    if(ammo<=0)nextRoundSoon();
+    return;
+  }
+
+  const t=targetRects[idx],opt=window.currentOptions[idx],ratio=dist/t.r;
+  let ringPts=25,label='OK!';
+  if(ratio<=.22){ringPts=100;label='PERFECT!';}
+  else if(ratio<=.44){ringPts=75;label='GREAT!';}
+  else if(ratio<=.66){ringPts=50;label='NICE!';}
+
+  burst(s.tx,s.ty,ringPts>=75?28:16);
+
+  if(opt.correct){
+    streak++;
+    document.getElementById('streak').textContent='x'+streak;
+    const pts=ringPts;
+    score+=pts;
+    document.getElementById('score').textContent=score;
+    showFeedback(label,'+'+pts);
+    if(ringPts===100)bullSound();else hitSound();
+    running=false;
+    const sid=session;
+    setTimeout(()=>{if(sid!==session)return;round++;running=true;newRound()},1050);
+  }else{
+    streak=0;
+    document.getElementById('streak').textContent='x0';
+    showFeedback('WRONG!','0 points');
+    wrongSound();
+    if(ammo<=0)nextRoundSoon();
+  }
+}
+function nextRoundSoon(){
+  running=false;
+  const sid=session;
+  setTimeout(()=>{if(sid!==session)return;round++;running=true;newRound()},900);
+}
+function showFeedback(main,sub){
+  document.getElementById('feedback').innerHTML=main+(sub?'<small>'+sub+'</small>':'');
+  feedbackTimer=.7;
+}
+function burst(x,y,n){
+  for(let i=0;i<n;i++)particles.push({
+    x,y,vx:(Math.random()-.5)*360,vy:(Math.random()-.7)*280,
+    age:0,life:.35+Math.random()*.45,size:2+Math.random()*6
+  })
+}
+function finish(){
+  running=false;
+  document.getElementById('endScreen').style.display='grid';
+  document.getElementById('finalScore').textContent=score;
+  document.getElementById('resultText').textContent=
+    score>=600?'Excellent! You handled the moving customer challenge like a pro.':
+    score>=400?'Great work! Strong decisions and good aim.':
+    'Good try! Play again and track the moving targets.';
+}
+
+function update(dt){
+  if(feedbackTimer>0){
+    feedbackTimer-=dt;
+    if(feedbackTimer<=0)document.getElementById('feedback').innerHTML=''
+  }
+
+  if(running){
+    timeAcc+=dt;
+    if(timeAcc>=1){
+      timeAcc-=1;timeLeft=Math.max(0,timeLeft-1);
+      document.getElementById('timer').textContent=String(timeLeft);
+      document.getElementById('timerFill').style.width=(timeLeft/90*100)+'%';
+      if(timeLeft<=10&&timeLeft>0)tickSound();
+      if(timeLeft<=0){
+        running=false;endSound();showFeedback('TIME UP!','');
+        const sid=session;
+        setTimeout(()=>{if(sid===session)finish()},700);
+      }
+    }
+
+    // horizontal target movement
+    const maxOffset=Math.min(W*.055,70);
+    units.forEach((u,i)=>{
+      u.offset+=u.dir*u.speed*dt;
+      if(u.offset>maxOffset){u.offset=maxOffset;u.dir=-1;}
+      if(u.offset<-maxOffset){u.offset=-maxOffset;u.dir=1;}
+      const bob=Math.sin(performance.now()/700+u.phase)*6;
+      document.getElementById('unit'+i).style.transform=
+        'translate('+u.offset+'px,'+bob+'px)';
+    });
+  }
+
+  for(const s of shots){
+    s.p+=dt*5.3;
+    if(s.p>=1&&!s.checked){s.checked=true;hitCheck(s)}
+  }
+  shots=shots.filter(s=>s.p<1.12);
+
+  for(const p of particles){
+    p.age+=dt;p.vy+=400*dt;p.x+=p.vx*dt;p.y+=p.vy*dt
+  }
+  particles=particles.filter(p=>p.age<p.life);
+}
+
+function drawBackground(){
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='rgba(120,145,210,.06)';ctx.lineWidth=2;
+  const bh=42,bw=110;
+  for(let y=170;y<H;y+=bh){
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+    const off=((y/bh)%2)*bw/2;
+    for(let x=-off;x<W;x+=bw){
+      ctx.beginPath();ctx.moveTo(x,y-bh);ctx.lineTo(x,y);ctx.stroke();
+    }
+  }
+  let g=ctx.createLinearGradient(0,H*.72,0,H);
+  g.addColorStop(0,'rgba(80,45,140,.02)');
+  g.addColorStop(1,'rgba(80,45,140,.20)');
+  ctx.fillStyle=g;ctx.fillRect(0,H*.68,W,H*.32);
+}
+function drawBull(t){
+  ctx.save();
+  ctx.shadowBlur=24;ctx.shadowColor='rgba(116,82,255,.55)';
+  const rings=[
+    [1,'#f4f2eb'],
+    [.80,'#202026'],
+    [.62,'#2d8df0'],
+    [.44,'#f2392f'],
+    [.24,'#ffd42c'],
+    [.10,'#e52a25']
+  ];
+  for(const [s,c] of rings){
+    ctx.fillStyle=c;
+    ctx.beginPath();ctx.arc(t.x,t.y,t.r*s,0,Math.PI*2);ctx.fill();
+  }
+  ctx.shadowBlur=0;
+  ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(t.x,t.y,t.r,0,Math.PI*2);ctx.stroke();
+
+  const fs=Math.max(16,t.r*.13);
+  ctx.font='1000 '+fs+'px Arial';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.lineWidth=5;ctx.strokeStyle='rgba(0,0,0,.70)';ctx.fillStyle='#fff';
+
+  const labels=[
+    ['25',t.y-t.r*.88],
+    ['50',t.y-t.r*.62],
+    ['75',t.y-t.r*.40],
+    ['100',t.y]
+  ];
+  for(const [txt,y] of labels){
+    ctx.strokeText(txt,t.x,y);
+    ctx.fillText(txt,t.x,y);
+  }
+  ctx.restore();
+}
+function drawBow(){
+  const cx=W/2,cy=H+38,dx=mouse.x-cx,dy=mouse.y-cy,ang=Math.atan2(dy,dx)+Math.PI/2;
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(ang);
+  ctx.strokeStyle='#c77a38';ctx.lineWidth=11;
+  ctx.beginPath();ctx.arc(0,0,100,Math.PI*1.08,Math.PI*1.92);ctx.stroke();
+  ctx.strokeStyle='rgba(245,245,255,.92)';ctx.lineWidth=2;
+  const p1={x:Math.cos(Math.PI*1.08)*100,y:Math.sin(Math.PI*1.08)*100};
+  const p2={x:Math.cos(Math.PI*1.92)*100,y:Math.sin(Math.PI*1.92)*100};
+  ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(0,-23);ctx.lineTo(p2.x,p2.y);ctx.stroke();
+  ctx.restore();
+}
+function drawArrow(a){
+  const p=Math.min(a.p,1),e=1-Math.pow(1-p,2.4);
+  const x=a.sx+(a.tx-a.sx)*e,y=a.sy+(a.ty-a.sy)*e;
+  const dx=a.tx-a.sx,dy=a.ty-a.sy,len=Math.hypot(dx,dy);
+  const ux=dx/len,uy=dy/len,px=-uy,py=ux;
+  ctx.strokeStyle='#efe7d8';ctx.lineWidth=4;
+  ctx.beginPath();ctx.moveTo(x-ux*50,y-uy*50);ctx.lineTo(x,y);ctx.stroke();
+  ctx.fillStyle='#d9dfff';
+  ctx.beginPath();
+  ctx.moveTo(x+ux*12,y+uy*12);
+  ctx.lineTo(x-ux*4+px*6,y-uy*4+py*6);
+  ctx.lineTo(x-ux*4-px*6,y-uy*4-py*6);
+  ctx.closePath();ctx.fill();
+}
+function crosshair(){
+  ctx.save();ctx.translate(mouse.x,mouse.y);
+  ctx.strokeStyle='rgba(255,255,255,.96)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(0,0,17,0,Math.PI*2);ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-28,0);ctx.lineTo(-8,0);
+  ctx.moveTo(28,0);ctx.lineTo(8,0);
+  ctx.moveTo(0,-28);ctx.lineTo(0,-8);
+  ctx.moveTo(0,28);ctx.lineTo(0,8);ctx.stroke();
+  ctx.fillStyle='#ff3a34';
+  ctx.beginPath();ctx.arc(0,0,3,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+function draw(){
+  drawBackground();
+  calculateTargets();
+  targetRects.forEach(drawBull);
+  for(const p of particles){
+    ctx.globalAlpha=1-p.age/p.life;
+    ctx.fillStyle='#ffd42c';
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+  }
+  shots.forEach(drawArrow);
+  drawBow();crosshair();
+}
+function loop(now){
+  const dt=Math.min((now-last)/1000,.033);last=now;
+  update(dt);draw();requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
